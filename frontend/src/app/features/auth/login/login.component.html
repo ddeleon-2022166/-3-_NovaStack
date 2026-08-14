@@ -1,0 +1,77 @@
+<div class="login-page">
+  <div class="login-card">
+    <img
+      src="images/logo.png"
+      alt="Logo de Control de Gastos"
+      class="login-card__logo"
+    />
+
+    <h1 class="login-card__title">Control de Gastos</h1>
+    <p class="login-card__subtitle">Inicia sesion para continuar</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
+      <div class="form-field">
+        <label for="email">Correo electronico</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="cliente@controldegastos.com"
+          autocomplete="email"
+          [class.invalid]="form.controls.email.invalid && form.controls.email.touched"
+        />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <span class="field-error">
+            @if (form.controls.email.hasError('required')) {
+              El correo electronico es obligatorio.
+            } @else if (form.controls.email.hasError('email')) {
+              Ingresa un correo electronico valido.
+            }
+          </span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="password">Contrasena</label>
+        <div class="password-input">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Tu contrasena"
+            autocomplete="current-password"
+            [class.invalid]="form.controls.password.invalid && form.controls.password.touched"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contrasena' : 'Mostrar contrasena'"
+          >
+            {{ showPassword() ? "Ocultar" : "Mostrar" }}
+          </button>
+        </div>
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+          <span class="field-error">La contrasena es obligatoria.</span>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="form-alert" role="alert">{{ errorMessage() }}</div>
+      }
+
+      <button
+        type="submit"
+        class="submit-button"
+        [disabled]="form.invalid || isSubmitting()"
+      >
+        @if (isSubmitting()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Iniciando sesion...
+        } @else {
+          Iniciar sesion
+        }
+      </button>
+    </form>
+  </div>
+</div>
