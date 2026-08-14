@@ -1,0 +1,59 @@
+/* Estilos globales de la aplicacion Control de Gastos */
+
+:root {
+  /* Paleta inspirada en el logo: fondo oscuro azulado, turquesa, dorado/naranja y azul */
+  --color-bg: #0b1424;
+  --color-surface: #121e34;
+  --color-surface-alt: #16233d;
+  --color-border: #24354f;
+
+  --color-primary: #2dd4c6; /* turquesa */
+  --color-primary-hover: #26bcaf;
+  --color-accent: #f2a93c; /* dorado / naranja */
+  --color-secondary: #3d7bf0; /* azul */
+
+  --color-text: #eef2f8;
+  --color-text-muted: #9fb0c8;
+  --color-error: #e5626a;
+  --color-error-bg: rgba(229, 98, 106, 0.12);
+
+  --font-heading: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+a {
+  color: var(--color-primary);
+}
