@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Archivos compilados
+dist/
+
+# Variables de entorno privadas
+.env
+
+# Caché de Angular
+.angular/
+
+# Registros
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
