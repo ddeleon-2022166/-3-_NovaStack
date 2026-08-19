@@ -1,16 +1,39 @@
-/* Estilos globales de la aplicacion Control de Gastos */
+/* Estilos globales de la aplicacion NovaStack (Control de Gastos) */
 
 :root {
-  /* Paleta inspirada en el logo: fondo oscuro azulado, turquesa, dorado/naranja y azul */
-  --color-bg: #0b1424;
-  --color-surface: #121e34;
-  --color-surface-alt: #16233d;
-  --color-border: #24354f;
+  /* Paleta extraida del logo real: circuito en degrade azul -> dorado -> naranja */
+  --color-bg: #0a1220;
+  --color-surface: #111b2e;
+  --color-surface-alt: #16223a;
+  --color-border: #223148;
 
-  --color-primary: #2dd4c6; /* turquesa */
-  --color-primary-hover: #26bcaf;
-  --color-accent: #f2a93c; /* dorado / naranja */
-  --color-secondary: #3d7bf0; /* azul */
+  /* Colores tomados directamente del logo */
+  --brand-blue: #4199ca;
+  --brand-blue-deep: #4d6cc4;
+  --brand-blue-soft: #6ea1d1;
+  --brand-periwinkle: #6c88d8;
+  --brand-teal: #16b4b6;
+  --brand-teal-deep: #30a4a4;
+  --brand-gold: #e4cc54;
+  --brand-gold-soft: #d6af59;
+  --brand-tan: #c0a46c;
+  --brand-rust: #cb853f;
+  --brand-brown: #945434;
+  --brand-mist: #d7d8e2;
+
+  --color-primary: var(--brand-teal);
+  --color-primary-hover: #139a9c;
+  --color-accent: var(--brand-gold-soft);
+  --color-secondary: var(--brand-blue-deep);
+
+  /* Degrade insignia, usado en acentos decorativos, botones destacados y el aro del logo */
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--brand-blue) 0%,
+    var(--brand-teal) 35%,
+    var(--brand-gold-soft) 70%,
+    var(--brand-rust) 100%
+  );
 
   --color-text: #eef2f8;
   --color-text-muted: #9fb0c8;
@@ -56,4 +79,15 @@ button {
 
 a {
   color: var(--color-primary);
+}
+
+/* Patron decorativo tipo "circuito", inspirado en el logo. Se aplica como
+   clase sobre un contenedor de fondo; es puramente decorativo (opacidad
+   baja) y no afecta la legibilidad del contenido que va encima. */
+.circuit-pattern {
+  background-image: radial-gradient(var(--brand-teal) 1px, transparent 1px),
+    radial-gradient(var(--brand-gold-soft) 1px, transparent 1px);
+  background-size: 42px 42px, 42px 42px;
+  background-position: 0 0, 21px 21px;
+  opacity: 0.14;
 }

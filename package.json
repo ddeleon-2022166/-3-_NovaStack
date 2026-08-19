@@ -4,12 +4,12 @@
   "private": true,
   "description": "Proyecto academico Control de Gastos - entrega 1: login con JWT (Angular + Express + PostgreSQL)",
   "scripts": {
-    "install:backend": "npm install --prefix backend",
-    "install:frontend": "npm install --prefix frontend",
-    "install:all": "npm run install:backend && npm run install:frontend",
-    "dev:backend": "npm run dev --prefix backend",
-    "dev:frontend": "npm start --prefix frontend",
-    "db:migrate": "npm run db:migrate --prefix backend",
-    "db:seed": "npm run db:seed --prefix backend"
+    "install:backend": "pnpm --dir backend install",
+    "install:frontend": "pnpm --dir frontend install",
+    "install:all": "pnpm run install:backend && pnpm run install:frontend",
+    "dev:backend": "pnpm --dir backend run dev",
+    "dev:frontend": "pnpm --dir frontend run start",
+    "db:migrate": "pnpm --dir backend run db:migrate",
+    "db:seed": "pnpm --dir backend run db:seed"
   }
 }
