@@ -2,14 +2,16 @@
   @if (isVerifying()) {
     <div class="welcome-card">
       <span class="spinner" aria-hidden="true"></span>
-      <p>Verificando sesion...</p>
+      <p>Verificando sesión...</p>
     </div>
-  } @else if (!verificationFailed()) {
+  } @else if (currentUser()) {
     <div class="welcome-card">
-      <img src="images/logo.png" alt="Logo de Control de Gastos" class="welcome-card__logo" />
+      <div class="welcome-card__logo-ring">
+        <img src="images/logo.png" alt="Logo de NovaStack" class="welcome-card__logo" />
+      </div>
       <h1>Bienvenido</h1>
-      <p class="welcome-card__message">Has iniciado sesion correctamente.</p>
-      <button type="button" class="logout-button" (click)="logout()">Cerrar sesion</button>
+      <p class="welcome-card__message">Has iniciado sesión correctamente.</p>
+      <button type="button" class="logout-button" (click)="logout()">Cerrar sesión</button>
     </div>
   }
 </div>

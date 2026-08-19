@@ -1,0 +1,23 @@
+@if (isVisible()) {
+  <div class="expiry-backdrop">
+    <div class="expiry-modal" role="alertdialog" aria-live="assertive" aria-labelledby="expiry-title">
+      <div class="expiry-modal__icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" />
+          <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <h2 id="expiry-title">Tu sesión ha finalizado</h2>
+      <p>
+        Por tu seguridad, cerramos la sesión automáticamente al vencerse el
+        tiempo permitido. Vuelve a iniciar sesión para continuar usando la
+        aplicación.
+      </p>
+
+      <button type="button" class="expiry-modal__button" (click)="goToLogin()">
+        Volver a iniciar sesión
+      </button>
+    </div>
+  </div>
+}
