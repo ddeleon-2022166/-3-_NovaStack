@@ -1,23 +1,37 @@
-import { HttpInterceptorFn } from "@angular/common/http";
+import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
 import { inject } from "@angular/core";
+import { catchError, throwError } from "rxjs";
 import { AuthService } from "../services/auth.service";
 
 /**
- * Interceptor funcional que agrega el encabezado
- * "Authorization: Bearer <token>" a las solicitudes dirigidas a la API,
- * unicamente cuando existe un token guardado.
+ * Interceptor funcional que:
+ * 1. Agrega el encabezado "Authorization: Bearer <token>" a las
+ *    solicitudes dirigidas a la API, unicamente cuando existe un token
+ *    guardado.
+ * 2. Sirve como respaldo del temporizador de expiracion: si una peticion
+ *    que SI llevaba token recibe un 401 (token vencido o invalidado por
+ *    el backend), se activa la senal global de sesion expirada, para que
+ *    la interfaz muestre el aviso aunque el temporizador no se haya
+ *    disparado todavia (por ejemplo, por un pequeno desfase de reloj).
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  if (!token) {
-    return next(req);
-  }
+  const authenticatedRequest = token
+    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    : req;
 
-  const authenticatedRequest = req.clone({
-    setHeaders: { Authorization: `Bearer ${token}` },
-  });
-
-  return next(authenticatedRequest);
+  return next(authenticatedRequest).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Solo tratamos el 401 como "sesion expirada" si la peticion
+      // realmente llevaba un token (para no disparar el aviso cuando el
+      // 401 viene, por ejemplo, de un login con credenciales incorrectas,
+      // que nunca envia Authorization).
+      if (token && error.status === 401) {
+        authService.expireSession();
+      }
+      return throwError(() => error);
+    })
+  );
 };

@@ -1,77 +1,99 @@
 <div class="login-page">
-  <div class="login-card">
-    <img
-      src="images/logo.png"
-      alt="Logo de Control de Gastos"
-      class="login-card__logo"
-    />
+  <section class="login-hero">
+    <div class="login-hero__circuit circuit-pattern" aria-hidden="true"></div>
 
-    <h1 class="login-card__title">Control de Gastos</h1>
-    <p class="login-card__subtitle">Inicia sesion para continuar</p>
+    <div class="login-hero__content">
+      <div class="login-hero__logo-ring">
+        <img src="images/logo.png" alt="Logo de NovaStack" class="login-hero__logo" />
+      </div>
+      <h1 class="login-hero__brand">NovaStack</h1>
+      <p class="login-hero__tagline">Control de Gastos, simple y seguro.</p>
+    </div>
+  </section>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
-      <div class="form-field">
-        <label for="email">Correo electronico</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="cliente@controldegastos.com"
-          autocomplete="email"
-          [class.invalid]="form.controls.email.invalid && form.controls.email.touched"
-        />
-        @if (form.controls.email.invalid && form.controls.email.touched) {
-          <span class="field-error">
-            @if (form.controls.email.hasError('required')) {
-              El correo electronico es obligatorio.
-            } @else if (form.controls.email.hasError('email')) {
-              Ingresa un correo electronico valido.
-            }
-          </span>
-        }
+  <section class="login-form-panel">
+    <div class="login-card">
+      <div class="login-card__mobile-brand">
+        <img src="images/logo.png" alt="Logo de NovaStack" class="login-card__mobile-logo" />
+        <span>NovaStack</span>
       </div>
 
-      <div class="form-field">
-        <label for="password">Contrasena</label>
-        <div class="password-input">
+      <h2 class="login-card__title">Iniciar sesión</h2>
+      <p class="login-card__subtitle">Ingresa tus credenciales para continuar</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
+        <div class="form-field">
+          <label for="email">Correo electrónico</label>
           <input
-            id="password"
-            [type]="showPassword() ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="Tu contrasena"
-            autocomplete="current-password"
-            [class.invalid]="form.controls.password.invalid && form.controls.password.touched"
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="cliente@controldegastos.com"
+            autocomplete="email"
+            [class.invalid]="form.controls.email.invalid && form.controls.email.touched"
           />
-          <button
-            type="button"
-            class="password-toggle"
-            (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword() ? 'Ocultar contrasena' : 'Mostrar contrasena'"
-          >
-            {{ showPassword() ? "Ocultar" : "Mostrar" }}
-          </button>
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <span class="field-error">
+              @if (form.controls.email.hasError('required')) {
+                El correo electrónico es obligatorio.
+              } @else if (form.controls.email.hasError('email')) {
+                Ingresa un correo electrónico válido.
+              }
+            </span>
+          }
         </div>
-        @if (form.controls.password.invalid && form.controls.password.touched) {
-          <span class="field-error">La contrasena es obligatoria.</span>
-        }
-      </div>
 
-      @if (errorMessage()) {
-        <div class="form-alert" role="alert">{{ errorMessage() }}</div>
-      }
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <div class="password-input">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Tu contraseña"
+              autocomplete="current-password"
+              [class.invalid]="form.controls.password.invalid && form.controls.password.touched"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              @if (showPassword()) {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3l18 18M10.6 10.6a2.4 2.4 0 003.4 3.4M6.5 6.7C4.3 8.1 2.7 10 2 12c1.6 4 5.5 7 10 7 1.7 0 3.3-.4 4.7-1.1M9.9 4.2A10.6 10.6 0 0112 4c4.5 0 8.4 3 10 7-.5 1.3-1.3 2.6-2.3 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 12c1.6-4 5.5-7 10-7s8.4 3 10 7c-1.6 4-5.5 7-10 7s-8.4-3-10-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <span class="field-error">La contraseña es obligatoria.</span>
+          }
+        </div>
 
-      <button
-        type="submit"
-        class="submit-button"
-        [disabled]="form.invalid || isSubmitting()"
-      >
-        @if (isSubmitting()) {
-          <span class="spinner" aria-hidden="true"></span>
-          Iniciando sesion...
-        } @else {
-          Iniciar sesion
+        @if (errorMessage()) {
+          <div class="form-alert" role="alert">{{ errorMessage() }}</div>
         }
-      </button>
-    </form>
-  </div>
+
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="form.invalid || isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            <span class="spinner" aria-hidden="true"></span>
+            Iniciando sesión...
+          } @else {
+            Iniciar sesión
+          }
+        </button>
+      </form>
+    </div>
+  </section>
 </div>

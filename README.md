@@ -56,11 +56,11 @@ formas:
 
 ```bash
 # Opción A: usando los atajos del package.json raíz
-npm run install:all
+pnpm run install:all
 
 # Opción B: instalando cada parte por separado
-cd backend && npm install
-cd ../frontend && npm install
+cd backend && pnpm install
+cd ../frontend && pnpm install
 ```
 
 ---
@@ -88,17 +88,14 @@ cd ../frontend && npm install
 3. Ejecuta la migración para crear la tabla `users`:
 
    ```bash
-   npm run db:migrate --prefix backend
+   pnpm --dir backend run db:migrate
    ```
 
 4. Ejecuta el seed para crear el usuario inicial de prueba:
 
    ```bash
-   npm run db:seed --prefix backend
+   pnpm --dir backend run db:seed
    ```
-
-   Puedes correr el seed varias veces sin miedo: si el usuario ya existe,
-   el script lo detecta y no crea duplicados.
 
 5. Si quieres confirmar que el usuario se creó correctamente, puedes
    consultarlo así:
@@ -113,7 +110,7 @@ cd ../frontend && npm install
 
 ```bash
 cd backend
-npm run dev
+pnpm run dev
 ```
 
 En la consola deberías ver algo como esto:
@@ -128,8 +125,8 @@ Si en algún momento quieres probar la versión compilada en lugar del modo
 desarrollo, puedes hacerlo con:
 
 ```bash
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 ---
@@ -138,7 +135,7 @@ Para levantar el frontend:
 
 ```bash
 cd frontend
-npm start
+pnpm start
 ```
 
 Luego abre `http://localhost:4200` en tu navegador. Con el backend
@@ -153,9 +150,8 @@ usarse.
 Correo:     cliente@controldegastos.com
 Contraseña: Cliente2026*
 ```
-
 Estas credenciales se crean automáticamente con el script de seed
-(`npm run db:seed`) y quedan guardadas cifradas con `bcryptjs` en
+(`pnpm run db:seed`) y quedan guardadas cifradas con `bcryptjs` en
 PostgreSQL. La contraseña en texto plano solo aparece aquí, en esta
 documentación, para que puedas probar el login sin complicaciones.
 
