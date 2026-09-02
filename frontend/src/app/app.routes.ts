@@ -9,10 +9,28 @@ export const routes: Routes = [
       import("./features/auth/login/login.component").then((m) => m.LoginComponent),
   },
   {
-    path: "bienvenida",
+    // Layout compartido (barra lateral + barra superior) para toda el
+    // area autenticada. El guard se aplica una sola vez aqui y protege
+    // por igual a todas las rutas hijas (Dashboard, Ingresos, y las que
+    // se agreguen despues).
+    path: "",
     canActivate: [authGuard],
     loadComponent: () =>
-      import("./features/welcome/welcome.component").then((m) => m.WelcomeComponent),
+      import("./shared/dashboard-shell/dashboard-shell.component").then(
+        (m) => m.DashboardShellComponent
+      ),
+    children: [
+      {
+        path: "dashboard",
+        loadComponent: () =>
+          import("./features/dashboard/dashboard.component").then((m) => m.DashboardComponent),
+      },
+      {
+        path: "ingresos",
+        loadComponent: () =>
+          import("./features/incomes/incomes.component").then((m) => m.IncomesComponent),
+      },
+    ],
   },
   { path: "**", redirectTo: "login" },
 ];
