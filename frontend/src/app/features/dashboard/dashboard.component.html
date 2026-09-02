@@ -1,0 +1,29 @@
+<div class="dashboard-panel">
+  <div class="dashboard-panel__header">
+    <span class="dashboard-panel__icon" aria-hidden="true">
+      <svg viewBox="0 0 34 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.5" y="18" width="4.2" height="8" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="9" y="12.5" width="4.2" height="13.5" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="16.5" y="6.5" width="4.2" height="19.5" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <path d="M2 15.5L10.5 8.5 16 11 23.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        <polygon points="0,0 -4.4,-2.2 -4.4,2.2" fill="currentColor" transform="translate(23.5,3.5) rotate(-45)" />
+        <circle cx="29.8" cy="6.2" r="3.8" fill="currentColor" />
+        <text x="29.8" y="7.9" font-size="4.8" font-weight="700" fill="#123443" text-anchor="middle">$</text>
+      </svg>
+    </span>
+    <h1>Visión general del estado actual</h1>
+  </div>
+
+  <div class="summary-grid">
+    @for (card of summaryCards(); track card.title) {
+      <article class="summary-card">
+        <div class="summary-card__body">
+          <h2>{{ card.title }}</h2>
+          <p class="summary-card__value">{{ card.value }}</p>
+          <p class="summary-card__caption">{{ card.caption }}</p>
+        </div>
+        <div class="summary-card__footer"></div>
+      </article>
+    }
+  </div>
+</div>

@@ -19,7 +19,7 @@
       </div>
 
       <h2 class="login-card__title">Iniciar sesión</h2>
-      <p class="login-card__subtitle">Ingresa tus credenciales para continuar</p>
+      <p class="login-card__subtitle">Ingrese sus credenciales para continuar</p>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="login-form" novalidate>
         <div class="form-field">
@@ -37,7 +37,7 @@
               @if (form.controls.email.hasError('required')) {
                 El correo electrónico es obligatorio.
               } @else if (form.controls.email.hasError('email')) {
-                Ingresa un correo electrónico válido.
+                Ingrese un correo electrónico válido.
               }
             </span>
           }
@@ -50,7 +50,7 @@
               id="password"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              placeholder="Tu contraseña"
+              placeholder="Digite su contraseña..."
               autocomplete="current-password"
               [class.invalid]="form.controls.password.invalid && form.controls.password.touched"
             />
