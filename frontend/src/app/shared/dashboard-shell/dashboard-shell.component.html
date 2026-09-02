@@ -1,0 +1,119 @@
+<div class="dashboard-layout">
+  <!-- ============ Barra lateral ============ -->
+  <aside class="sidebar">
+    <a routerLink="/dashboard" class="sidebar__brand" aria-label="Ir al Dashboard">
+      <img src="images/logo.png" alt="Logo de NovaStack" class="sidebar__logo" />
+      <span class="sidebar__brand-name">NovaStack</span>
+      <span class="sidebar__tagline">Control de Gastos, simple y seguro.</span>
+    </a>
+
+    <nav class="sidebar__nav">
+      @for (item of sidebarNavItems; track item.label) {
+        @if (item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="sidebar__nav-item--active"
+            class="sidebar__nav-item"
+          >
+            <span class="sidebar__nav-icon">
+              @switch (item.icon) {
+                @case ("ingresos") {
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="8.6" cy="5.8" rx="4" ry="1.9" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M4.6 5.8v3.8c0 1.05 1.8 1.9 4 1.9s4-.85 4-1.9V5.8" stroke="currentColor" stroke-width="1.6" />
+                    <ellipse cx="14.2" cy="8.6" rx="4" ry="1.9" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M10.2 8.6v3.7c0 1.05 1.8 1.9 4 1.9s4-.85 4-1.9V8.6" stroke="currentColor" stroke-width="1.6" />
+                    <rect x="2" y="14.6" width="17.6" height="8" rx="1" transform="rotate(-8 10.8 18.6)" stroke="currentColor" stroke-width="1.6" />
+                    <text x="9.3" y="20.6" font-size="5.6" font-weight="700" fill="currentColor" transform="rotate(-8 10.8 18.6)">$</text>
+                  </svg>
+                }
+              }
+            </span>
+            <span class="sidebar__nav-label">{{ item.label }}</span>
+          </a>
+        } @else {
+          <button type="button" class="sidebar__nav-item">
+            <span class="sidebar__nav-icon">
+              @switch (item.icon) {
+                @case ("informe") {
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="2.6" width="16" height="19.6" rx="1.8" stroke="currentColor" stroke-width="1.8" />
+                    <rect x="8.4" y="1" width="7.2" height="3.4" rx="1.1" stroke="currentColor" stroke-width="1.7" />
+                    <path d="M7 9.6l1.4 1.4 2.3-2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12.9" y1="9.6" x2="17.3" y2="9.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    <path d="M7 14.4l1.4 1.4 2.3-2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12.9" y1="14.4" x2="17.3" y2="14.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    <path d="M7 19.2l1.4 1.4 2.3-2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                    <line x1="12.9" y1="19.2" x2="17.3" y2="19.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  </svg>
+                }
+                @case ("historial") {
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Flecha circular que envuelve el reloj -->
+                    <path d="M12 1.4a10.6 10.6 0 1 1 -9.6 6.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M0.8 5.6l1.6 3 3.1-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <!-- Reloj grande, dominante -->
+                    <circle cx="12" cy="12.6" r="7.3" stroke="currentColor" stroke-width="1.9" />
+                    <path d="M12 8.2v4.4l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                }
+              }
+            </span>
+            <span class="sidebar__nav-label">{{ item.label }}</span>
+          </button>
+        }
+      }
+    </nav>
+
+    <button type="button" class="sidebar__logout" (click)="logout()">Cerrar sesión</button>
+  </aside>
+
+  <!-- ============ Columna derecha: barra superior + contenido ============ -->
+  <div class="dashboard-main">
+    <header class="topbar">
+      <button type="button" class="topbar__menu-button" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="4.2" cy="6.5" r="1.5" stroke="currentColor" stroke-width="1.4" />
+          <rect x="8.2" y="5.1" width="12" height="2.8" rx="1.4" stroke="currentColor" stroke-width="1.2" />
+          <circle cx="4.2" cy="12" r="1.5" stroke="currentColor" stroke-width="1.4" />
+          <rect x="8.2" y="10.6" width="12" height="2.8" rx="1.4" stroke="currentColor" stroke-width="1.2" />
+          <circle cx="4.2" cy="17.5" r="1.5" stroke="currentColor" stroke-width="1.4" />
+          <rect x="8.2" y="16.1" width="12" height="2.8" rx="1.4" stroke="currentColor" stroke-width="1.2" />
+        </svg>
+      </button>
+
+      <nav class="topbar__nav">
+        @for (item of topNavItems; track item.label) {
+          <span class="topbar__nav-item">{{ item.label }}</span>
+        }
+      </nav>
+
+      <div class="topbar__user">
+        @if (currentUser()) {
+          <div class="topbar__user-info">
+            <span class="topbar__user-name">{{ displayName() }}</span>
+            <span class="topbar__user-id">{{ userIdentifier() }}</span>
+          </div>
+          <span class="topbar__avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="12" fill="#000000" />
+              <circle cx="12" cy="9.6" r="3.3" fill="#ffffff" />
+              <path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" fill="#ffffff" />
+            </svg>
+          </span>
+        }
+      </div>
+    </header>
+
+    <section class="dashboard-content">
+      @if (isVerifying()) {
+        <div class="dashboard-content__loading">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Verificando sesión...</p>
+        </div>
+      } @else if (currentUser()) {
+        <router-outlet></router-outlet>
+      }
+    </section>
+  </div>
+</div>
