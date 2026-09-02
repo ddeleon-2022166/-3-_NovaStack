@@ -1,0 +1,390 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.incomes-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.incomes-panel__title {
+  font-size: 2.1rem;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 22px;
+}
+
+.incomes-panel__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Tarjeta "Ingresos Totales" (borde en degrade turquesa -> dorado) ---------- */
+
+.total-card {
+  border-radius: 10px;
+  padding: 1.5px;
+  background: var(--gradient-topbar);
+  flex: 0 1 430px;
+}
+
+.total-card__inner {
+  background: var(--dash-page-bg);
+  border-radius: 9px;
+  padding: 18px 32px;
+  text-align: center;
+
+  h2 {
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+}
+
+.total-card__value {
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 4px 0 0;
+}
+
+.total-card__caption {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.add-income-button {
+  border: none;
+  border-radius: 999px;
+  padding: 15px 26px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--color-text);
+  background: var(--gradient-topbar);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* ---------- Formulario + tabla ---------- */
+
+.incomes-panel__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.income-form {
+  background: var(--dash-panel-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field__label {
+  font-size: 0.92rem;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.form-field__control {
+  background: var(--dash-input-bg);
+  border: 1.5px solid var(--dash-input-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+}
+
+.form-field__control--textarea {
+  resize: none;
+  min-height: 92px;
+  font-style: italic;
+}
+
+.form-field__error {
+  color: var(--color-error);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.form-field__control--select {
+  appearance: none;
+  font-style: italic;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.date-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--dash-input-bg);
+  border: 1.5px solid var(--dash-input-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.date-stepper__control {
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-style: inherit;
+  font-size: inherit;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(22, 180, 182, 0.15);
+    color: var(--color-text);
+  }
+}
+
+.date-stepper__value {
+  min-width: 92px;
+  text-align: center;
+}
+
+.form-feedback {
+  margin: 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.form-feedback--error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.form-feedback--success {
+  color: var(--brand-teal-deep);
+  background: rgba(48, 164, 164, 0.14);
+}
+
+.save-button {
+  align-self: center;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 40px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-style: italic;
+  color: #0b1220;
+  background: var(--brand-teal-deep);
+  cursor: pointer;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.save-button__spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(11, 18, 32, 0.35);
+  border-top-color: #0b1220;
+  border-radius: 50%;
+  animation: save-button-spin 0.7s linear infinite;
+}
+
+@keyframes save-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Tabla de registros ---------- */
+
+.income-table {
+  background: var(--dash-panel-bg);
+  border-radius: var(--radius-lg);
+  padding: 20px 26px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.income-table__header {
+  display: grid;
+  grid-template-columns: 0.9fr 1.3fr 1fr 1fr 0.8fr;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 6px;
+  border-bottom: 1.5px solid var(--brand-teal-deep);
+
+  span {
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+}
+
+.income-table__empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dash-table-text-muted);
+  font-style: italic;
+  font-size: 0.95rem;
+  padding: 40px 0;
+}
+
+.income-table__rows {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.income-table__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.income-table__row-text {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.income-table__row-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.income-table__action-button {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* ================= Responsive ================= */
+
+@media (max-width: 1100px) {
+  .income-form,
+  .income-table {
+    padding: 18px 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .incomes-panel__body {
+    grid-template-columns: 1fr;
+  }
+
+  .incomes-panel__summary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .total-card {
+    flex-basis: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .income-table__header {
+    grid-template-columns: repeat(5, minmax(70px, 1fr));
+    overflow-x: auto;
+
+    span {
+      font-size: 0.85rem;
+    }
+  }
+}

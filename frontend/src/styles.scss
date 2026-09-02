@@ -46,6 +46,45 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --shadow-card: 0 20px 45px rgba(0, 0, 0, 0.35);
+
+  /* Tokens del Dashboard, calibrados con los colores exactos de la maqueta
+     aprobada. Se mantienen dentro de las mismas familias de color ya
+     usadas en el resto de la aplicacion (azul oscuro/marino, turquesa,
+     verde azulado, dorado, marron/naranja, gris, blanco). */
+  --dash-sidebar-bg: #222331; /* azul oscuro */
+  --dash-page-bg: #0c1424; /* azul marino, margen entre paneles */
+  --dash-panel-bg: #123443; /* azul marino / turquesa, panel principal */
+  --dash-card-bg: #a6a6a6; /* gris, bloque superior de cada tarjeta */
+  --dash-card-footer-bg: #222331; /* franja inferior oscura de cada tarjeta */
+  --dash-icon-color: #000000; /* negro, usado en todos los iconos */
+
+  /* Degrade de la barra superior: turquesa -> verde azulado -> dorado -> marron,
+     igual al de la maqueta (distinto del degrade insignia del login, que
+     incluye azul). Tambien se reutiliza en el boton "Cerrar sesion". */
+  --gradient-topbar: linear-gradient(
+    90deg,
+    #1f6169 0%,
+    #4f614b 38%,
+    #6a5c3b 70%,
+    #6c4e35 100%
+  );
+
+  /* Variante vertical del mismo degrade, usada en el borde derecho del
+     item de navegacion activo (seccion Ingresos). */
+  --gradient-topbar-vertical: linear-gradient(
+    180deg,
+    #1f6169 0%,
+    #4f614b 38%,
+    #6a5c3b 70%,
+    #6c4e35 100%
+  );
+
+  /* Tokens de la seccion Ingresos, calibrados igual con los colores
+     exactos de su maqueta aprobada. */
+  --dash-nav-active-bg: #27354d; /* azul marino, fondo del item de navegacion activo */
+  --dash-input-bg: #14243c; /* azul marino, fondo de campos de formulario */
+  --dash-input-border: var(--brand-teal-deep); /* turquesa */
+  --dash-table-text-muted: rgba(238, 242, 248, 0.7);
 }
 
 * {

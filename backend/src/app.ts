@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import { env } from "./config/env";
 import authRoutes from "./modules/auth/routes/auth.routes";
+import incomesRoutes from "./modules/incomes/routes/income.routes";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware";
 
 /**
@@ -29,9 +30,12 @@ export function createApp(): Application {
   // Modulo de autenticacion
   app.use("/api/auth", authRoutes);
 
-  // Nota de arquitectura: en una proxima entrega se agregara aqui el modulo
-  // "expenses" (por ejemplo: app.use("/api/expenses", expensesRoutes)),
-  // pero todavia no se implementa en esta entrega.
+  // Modulo de ingresos (registro y consulta, asociados al usuario autenticado)
+  app.use("/api/incomes", incomesRoutes);
+
+  // Nota de arquitectura: en una proxima entrega se agregaran aqui los
+  // modulos "expenses" y "bills" (por ejemplo: app.use("/api/expenses", ...)),
+  // pero todavia no se implementan en esta entrega.
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
