@@ -1,17 +1,22 @@
 # Control de Gastos — Entrega 1: Autenticación (Login con JWT)
 
-Esta es la primera entrega del proyecto académico "Control de Gastos", y se
-centra exclusivamente en el flujo de inicio de sesión: un usuario ya
-registrado (el cliente de la aplicación) ingresa su correo y su contraseña,
-el backend valida esas credenciales contra PostgreSQL, devuelve un JWT si
-todo es correcto, y el frontend lo lleva a una vista protegida donde ve el
-mensaje:
-
-> Bienvenido. Has iniciado sesión correctamente.
+Esta entrega del proyecto académico "Control de Gastos" cubre el flujo de
+inicio de sesión y dos secciones protegidas: un usuario ya registrado (el
+cliente de la aplicación) ingresa su correo y su contraseña, el backend
+valida esas credenciales contra PostgreSQL, devuelve un JWT si todo es
+correcto, y el frontend lo lleva al **Dashboard** (`/dashboard`), protegido
+por el mismo JWT. Desde la barra lateral del Dashboard también se puede
+entrar a la sección **Ingresos** (`/ingresos`), igualmente protegida por
+sesión, donde ahora sí se pueden registrar ingresos reales: quedan
+guardados en PostgreSQL, asociados al usuario autenticado, y tanto la
+tabla de Ingresos como la tarjeta "INGRESOS" del Dashboard muestran el
+total calculado directamente desde la base de datos.
 
 Todavía no se incluyen el registro público de usuarios, la recuperación de
-contraseña, el login con proveedores externos, los roles avanzados ni el
-módulo de gastos; eso queda para entregas posteriores.
+contraseña, el login con proveedores externos, los roles avanzados, ni los
+módulos de Gastos o Cuentas a pagar (por eso esas dos tarjetas del
+Dashboard se muestran fijas en `Q0.00`); eso queda para entregas
+posteriores.
 
 ---
 
@@ -20,20 +25,31 @@ módulo de gastos; eso queda para entregas posteriores.
 - **Backend**: construido con Node.js, Express y TypeScript, siguiendo una
   arquitectura modular por capas (rutas → controladores → servicios →
   modelos). PostgreSQL es la base de datos real que se consulta en cada
-  login. Las contraseñas se cifran con `bcryptjs`, la autenticación se
-  maneja con `jsonwebtoken`, las variables sensibles viven en un `.env`
-  gestionado con `dotenv`, y CORS está restringido al origen del frontend.
+  login y en cada operación de ingresos. Las contraseñas se cifran con
+  `bcryptjs`, la autenticación se maneja con `jsonwebtoken`, las variables
+  sensibles viven en un `.env` gestionado con `dotenv`, y CORS está
+  restringido al origen del frontend. El módulo `incomes` sigue la misma
+  estructura que `auth` (modelo, servicio, controlador, rutas,
+  validadores) y reutiliza el mismo `authMiddleware` para exigir un JWT
+  válido en cada endpoint.
 - **Frontend**: hecho en Angular con componentes standalone y TypeScript.
   Usa formularios reactivos, `HttpClient`, un interceptor funcional que
   agrega el JWT a cada petición que lo necesita, y un guard funcional que
-  protege la ruta de bienvenida. El diseño visual se inspira en la paleta
-  del logo: fondo oscuro azulado, turquesa, dorado/naranja y azul.
+  protege el layout autenticado. Ese layout (barra lateral + barra
+  superior) vive en un componente compartido que envuelve tanto al
+  Dashboard (`/dashboard`) como a Ingresos (`/ingresos`), evitando
+  duplicar la barra de navegación entre secciones. Ingresos ya está
+  conectado a la API real: el formulario registra ingresos en PostgreSQL,
+  la tabla y el total se vuelven a consultar automáticamente después de
+  cada registro, y el Dashboard consulta ese mismo total cada vez que se
+  entra a la pantalla. El diseño visual se inspira en la paleta del logo:
+  fondo oscuro azulado, turquesa, dorado/naranja y azul.
 - **Comunicación**: Angular corre en `http://localhost:4200` y consume la
   API REST de Express en `http://localhost:3000/api`.
-- **Nota de arquitectura**: ya se dejó preparado el lugar donde vivirá el
-  futuro módulo `expenses` (administración de gastos) dentro de
-  `src/modules/` del backend, pero en esta entrega no se implementa
-  todavía.
+- **Nota de arquitectura**: ya se dejó preparado el lugar donde vivirán los
+  futuros módulos `expenses` y `bills` (administración de gastos y cuentas
+  a pagar) dentro de `src/modules/` del backend, siguiendo el mismo patrón
+  que `incomes`, pero todavía no se implementan en esta entrega.
 
 ---
 
@@ -41,7 +57,7 @@ módulo de gastos; eso queda para entregas posteriores.
 
 Antes de empezar, asegúrate de tener instalado:
 
-- Node.js 18 o superior, junto con npm.
+- Node.js 18 o superior, junto con pnpm.
 - PostgreSQL 14 o superior corriendo localmente.
 - Visual Studio Code.
 - Git (no es indispensable para esta entrega, pero conviene tenerlo listo
@@ -85,7 +101,9 @@ cd ../frontend && pnpm install
    Abre `.env` y ajusta al menos `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`
    (para este último, cualquier cadena larga y aleatoria funciona bien).
 
-3. Ejecuta la migración para crear la tabla `users`:
+3. Ejecuta las migraciones (crean las tablas `users` e `incomes`; el
+   script corre todos los archivos `.sql` de `database/migrations/` en
+   orden, así que un solo comando alcanza para ambas):
 
    ```bash
    pnpm --dir backend run db:migrate
@@ -103,6 +121,10 @@ cd ../frontend && pnpm install
    ```sql
    SELECT id, name, email, created_at FROM users;
    ```
+
+   La tabla `incomes` se crea vacía a propósito (no tiene seed): los
+   registros solo se crean a través de la aplicación, una vez que inicias
+   sesión y usas el formulario de la sección Ingresos.
 
 ---
 
@@ -140,7 +162,14 @@ pnpm start
 
 Luego abre `http://localhost:4200` en tu navegador. Con el backend
 corriendo en otra terminal, ya deberías ver la pantalla de login lista para
-usarse.
+usarse. Al iniciar sesión con las credenciales de la sección 8, la
+aplicación te redirige automáticamente a `/dashboard`. Desde ahí, la opción
+"Ingresos" de la barra lateral lleva a `/ingresos` (también protegida por
+sesión), donde puedes registrar ingresos reales con el formulario: quedan
+guardados en PostgreSQL, y tanto la tabla como el total ("Ingresos
+Totales") se actualizan automáticamente después de guardar. Si todavía no
+has registrado ninguno, verás el total en `Q0.00` y el mensaje "No hay
+ingresos registrados" en la tabla, en vez de datos inventados.
 
 ---
 
@@ -154,5 +183,34 @@ Estas credenciales se crean automáticamente con el script de seed
 (`pnpm run db:seed`) y quedan guardadas cifradas con `bcryptjs` en
 PostgreSQL. La contraseña en texto plano solo aparece aquí, en esta
 documentación, para que puedas probar el login sin complicaciones.
+
+---
+
+## 9. Endpoints de Ingresos
+
+Todos requieren un JWT válido (el mismo `Authorization: Bearer <token>`
+que ya usa `/api/auth/me`), y solo devuelven u operan sobre los ingresos
+del usuario autenticado; el `user_id` nunca se recibe desde el frontend,
+siempre se toma del token verificado.
+
+- **`POST /api/incomes`** — registra un nuevo ingreso. Recibe
+  `description`, `amount`, `category` (una de `Sueldos`, `Freelance`,
+  `Inversiones`, `Otros`) e `incomeDate` (formato `AAAA-MM-DD`). Rechaza
+  montos menores o iguales a cero, y cualquier campo faltante.
+- **`GET /api/incomes`** — devuelve los ingresos del usuario autenticado,
+  del más reciente al más antiguo.
+- **`GET /api/incomes/summary`** — devuelve `{ "total": "0.00" }` (o el
+  total real), calculado con `SUM()` directamente en PostgreSQL, nunca
+  acumulado a mano en el backend o el frontend.
+
+### Cómo se actualiza el Dashboard
+
+La tarjeta `INGRESOS` del Dashboard consulta `GET /api/incomes/summary`
+cada vez que se entra a `/dashboard` (incluyendo al volver desde
+Ingresos), así que refleja el total real sin necesidad de volver a
+iniciar sesión. `GASTOS` y `CUENTAS A PAGAR` se muestran fijas en `Q0.00`
+porque esos módulos todavía no existen; `PRESUPUESTO RESTANTE` se calcula
+como `ingresos - gastos - cuentas por pagar` (por ahora, igual al total de
+ingresos, ya que los otros dos términos son cero).
 
 ---
