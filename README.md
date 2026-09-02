@@ -55,7 +55,7 @@ posteriores.
 
 ## 3. Requisitos previos
 
-Antes de empezar, asegúrate de tener instalado:
+Antes de empezar, asegúrese de tener instalado:
 
 - Node.js 18 o superior, junto con pnpm.
 - PostgreSQL 14 o superior corriendo localmente.
@@ -67,7 +67,7 @@ Antes de empezar, asegúrate de tener instalado:
 
 ## 4. Comandos para preparar el proyecto
 
-Desde la carpeta raíz `control-de-gastos`, puedes instalar todo de dos
+Desde la carpeta raíz `control-de-gastos`, puede instalar todo de dos
 formas:
 
 ```bash
@@ -83,14 +83,14 @@ cd ../frontend && pnpm install
 
 ## 5. Configuración de PostgreSQL y variables de entorno
 
-1. Crea la base de datos (por ejemplo, desde `psql` o cualquier cliente
-   gráfico que prefieras):
+1. Cree la base de datos (por ejemplo, desde `psql` o cualquier cliente
+   gráfico que prefiera):
 
    ```sql
    CREATE DATABASE control_de_gastos;
    ```
 
-2. Dentro de `backend/`, copia el archivo de ejemplo y complétalo con tus
+2. Dentro de `backend/`, copie el archivo de ejemplo y complételo con sus
    propias credenciales de PostgreSQL:
 
    ```bash
@@ -98,10 +98,10 @@ cd ../frontend && pnpm install
    cp .env.example .env
    ```
 
-   Abre `.env` y ajusta al menos `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`
+   Abra `.env` y ajuste al menos `DB_USER`, `DB_PASSWORD` y `JWT_SECRET`
    (para este último, cualquier cadena larga y aleatoria funciona bien).
 
-3. Ejecuta las migraciones (crean las tablas `users` e `incomes`; el
+3. Ejecute las migraciones (crean las tablas `users` e `incomes`; el
    script corre todos los archivos `.sql` de `database/migrations/` en
    orden, así que un solo comando alcanza para ambas):
 
@@ -109,13 +109,13 @@ cd ../frontend && pnpm install
    pnpm --dir backend run db:migrate
    ```
 
-4. Ejecuta el seed para crear el usuario inicial de prueba:
+4. Ejecute el seed para crear el usuario inicial de prueba:
 
    ```bash
    pnpm --dir backend run db:seed
    ```
 
-5. Si quieres confirmar que el usuario se creó correctamente, puedes
+5. Si quiere confirmar que el usuario se creó correctamente, puede
    consultarlo así:
 
    ```sql
@@ -123,8 +123,8 @@ cd ../frontend && pnpm install
    ```
 
    La tabla `incomes` se crea vacía a propósito (no tiene seed): los
-   registros solo se crean a través de la aplicación, una vez que inicias
-   sesión y usas el formulario de la sección Ingresos.
+   registros solo se crean a través de la aplicación, una vez que inicia
+   sesión y usa el formulario de la sección Ingresos.
 
 ---
 
@@ -135,7 +135,7 @@ cd backend
 pnpm run dev
 ```
 
-En la consola deberías ver algo como esto:
+En la consola debería ver algo como esto:
 
 ```
 Conexion a PostgreSQL exitosa (base de datos: control_de_gastos)
@@ -143,8 +143,8 @@ Servidor backend escuchando en http://localhost:3000
 CORS habilitado para: http://localhost:4200
 ```
 
-Si en algún momento quieres probar la versión compilada en lugar del modo
-desarrollo, puedes hacerlo con:
+Si en algún momento quiere probar la versión compilada en lugar del modo
+desarrollo, puede hacerlo con:
 
 ```bash
 pnpm run build
@@ -160,15 +160,15 @@ cd frontend
 pnpm start
 ```
 
-Luego abre `http://localhost:4200` en tu navegador. Con el backend
-corriendo en otra terminal, ya deberías ver la pantalla de login lista para
+Luego abra `http://localhost:4200` en su navegador. Con el backend
+corriendo en otra terminal, ya debería ver la pantalla de login lista para
 usarse. Al iniciar sesión con las credenciales de la sección 8, la
-aplicación te redirige automáticamente a `/dashboard`. Desde ahí, la opción
+aplicación le redirige automáticamente a `/dashboard`. Desde ahí, la opción
 "Ingresos" de la barra lateral lleva a `/ingresos` (también protegida por
-sesión), donde puedes registrar ingresos reales con el formulario: quedan
+sesión), donde puede registrar ingresos reales con el formulario: quedan
 guardados en PostgreSQL, y tanto la tabla como el total ("Ingresos
 Totales") se actualizan automáticamente después de guardar. Si todavía no
-has registrado ninguno, verás el total en `Q0.00` y el mensaje "No hay
+ha registrado ninguno, verá el total en `Q0.00` y el mensaje "No hay
 ingresos registrados" en la tabla, en vez de datos inventados.
 
 ---
@@ -182,7 +182,7 @@ Contraseña: Cliente2026*
 Estas credenciales se crean automáticamente con el script de seed
 (`pnpm run db:seed`) y quedan guardadas cifradas con `bcryptjs` en
 PostgreSQL. La contraseña en texto plano solo aparece aquí, en esta
-documentación, para que puedas probar el login sin complicaciones.
+documentación, para que pueda probar el login sin complicaciones.
 
 ---
 
