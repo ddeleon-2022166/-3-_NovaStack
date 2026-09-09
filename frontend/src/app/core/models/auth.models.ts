@@ -9,6 +9,8 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  // Solo presente para cuentas vinculadas con Google
+  profilePicture?: string;
 }
 
 // Forma de la respuesta exitosa del backend en POST /api/auth/login
@@ -17,6 +19,10 @@ export interface LoginResponse {
   token: string;
   user: AuthUser;
 }
+
+// Forma de la respuesta exitosa del backend en POST /api/auth/google
+// (identica a la del login tradicional, para que el frontend la trate igual)
+export type GoogleLoginResponse = LoginResponse;
 
 // Forma de la respuesta del backend en GET /api/auth/me
 export interface MeResponse {
