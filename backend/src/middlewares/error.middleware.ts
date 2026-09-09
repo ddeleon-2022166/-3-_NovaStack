@@ -1,12 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 
-// Error personalizado que permite adjuntar un codigo HTTP especifico
+// Error personalizado que permite adjuntar un codigo HTTP especifico y,
+// opcionalmente, un codigo de error estable (por ejemplo, "SESSION_EXPIRED")
+// que el frontend pueda reconocer sin depender del texto del mensaje.
 export class AppError extends Error {
   public readonly statusCode: number;
+  public readonly code?: string;
 
-  constructor(message: string, statusCode = 500) {
+  constructor(message: string, statusCode = 500, code?: string) {
     super(message);
     this.statusCode = statusCode;
+    this.code = code;
     Object.setPrototypeOf(this, AppError.prototype);
   }
 }
@@ -23,7 +27,10 @@ export function errorMiddleware(
   _next: NextFunction
 ): void {
   if (err instanceof AppError) {
-    res.status(err.statusCode).json({ message: err.message });
+    res.status(err.statusCode).json({
+      message: err.message,
+      ...(err.code ? { code: err.code } : {}),
+    });
     return;
   }
 
