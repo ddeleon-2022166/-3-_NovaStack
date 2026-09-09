@@ -7,11 +7,18 @@ import {
   createGoogleUser,
   findUserByEmail,
   findUserByGoogleSub,
+  findUserById,
   linkGoogleAccountToUser,
   PublicUser,
   toPublicUser,
   UserRecord,
 } from "../../users/models/user.model";
+import {
+  createSession,
+  isSessionAbsoluteExpired,
+  revokeSession,
+  touchSessionActivity,
+} from "../models/session.model";
 import { GoogleAuthInput, LoginInput } from "../validators/auth.validator";
 
 export interface LoginResult {
@@ -27,8 +34,14 @@ const INVALID_CREDENTIALS_MESSAGE = "El correo o la contrasena son incorrectos."
 // necesario pasarlo al construir el cliente.
 const googleClient = new OAuth2Client();
 
-function issueToken(user: UserRecord): string {
-  return jwt.sign({ userId: user.id }, env.jwt.secret, {
+/**
+ * Firma un JWT interno de NovaStack. Siempre incluye "sid" (el ID de la
+ * sesion en PostgreSQL), que es lo que permite al backend comprobar
+ * inactividad, revocacion y duracion maxima absoluta en cada peticion
+ * protegida.
+ */
+function issueToken(user: UserRecord, sessionId: string): string {
+  return jwt.sign({ userId: user.id, sid: sessionId }, env.jwt.secret, {
     expiresIn: env.jwt.expiresIn,
   } as jwt.SignOptions);
 }
@@ -55,8 +68,12 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
     throw new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
   }
 
+  // Cada inicio de sesion crea una sesion nueva en PostgreSQL; nunca se
+  // reutiliza una existente.
+  const session = await createSession(user.id);
+
   return {
-    token: issueToken(user),
+    token: issueToken(user, session.id),
     user: toPublicUser(user),
   };
 }
@@ -123,8 +140,61 @@ export async function loginWithGoogle({ idToken }: GoogleAuthInput): Promise<Log
     }
   }
 
+  // Igual que en el login tradicional: cada inicio de sesion con Google
+  // crea su propia sesion en PostgreSQL, con el mismo control de
+  // inactividad y duracion maxima absoluta.
+  const session = await createSession(user.id);
+
   return {
-    token: issueToken(user),
+    token: issueToken(user, session.id),
     user: toPublicUser(user),
   };
+}
+
+/**
+ * Renueva la actividad de una sesion existente (endpoint
+ * POST /api/auth/session/activity). Se ejecuta siempre despues de
+ * authMiddleware, que ya comprobo que la sesion sigue activa, no
+ * revocada, no vencida por inactividad y dentro de su duracion maxima
+ * absoluta; por eso aqui no se recupera una sesion ya vencida, solo se
+ * confirma actividad sobre una sesion que ya se sabe valida.
+ *
+ * Emite un JWT nuevo con otros SESSION_IDLE_TIMEOUT_MINUTES de duracion,
+ * conservando el mismo "sid". Nunca modifica "absolute_expires_at".
+ */
+export async function refreshSessionActivity(
+  userId: string,
+  sessionId: string
+): Promise<string> {
+  const session = await touchSessionActivity(sessionId);
+
+  if (!session) {
+    // Defensivo: la sesion se revoco entre el middleware y este punto.
+    throw new AppError("La sesion ha expirado por inactividad.", 401, "SESSION_EXPIRED");
+  }
+
+  if (isSessionAbsoluteExpired(session)) {
+    await revokeSession(sessionId);
+    throw new AppError(
+      "La sesion alcanzo su duracion maxima permitida.",
+      401,
+      "SESSION_EXPIRED"
+    );
+  }
+
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new AppError("El usuario asociado al token ya no existe.", 401);
+  }
+
+  return issueToken(user, sessionId);
+}
+
+/**
+ * Revoca en PostgreSQL la sesion indicada (cierre manual de sesion,
+ * endpoint POST /api/auth/logout). Una sesion revocada no puede volver a
+ * utilizarse.
+ */
+export async function logoutSession(sessionId: string): Promise<void> {
+  await revokeSession(sessionId);
 }
