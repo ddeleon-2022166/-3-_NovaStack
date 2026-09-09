@@ -314,3 +314,64 @@ entrega, prueba localmente:
    actual siguen funcionando exactamente igual que antes.
 
 ---
+
+## 11. Vencimiento de sesión por inactividad
+
+Además del vencimiento fijo original del JWT, ahora cada sesión se
+controla en PostgreSQL (tabla `user_sessions`, migración `004`) y el
+backend es quien decide si sigue siendo válida — el temporizador de
+Angular es solo una capa de aviso, no la protección real.
+
+- **Inactividad (15 minutos):** si no hay actividad real del usuario
+  (clic, teclado, táctil o navegación — el movimiento del mouse y las
+  peticiones automáticas no cuentan), la sesión vence. Cada actividad
+  reinicia el contador desde cero.
+- **Duración máxima absoluta (8 horas):** una sesión nunca dura más de
+  este tiempo, aunque haya actividad constante. Se calcula una única vez
+  al iniciar sesión (`absolute_expires_at`) y nunca se extiende.
+- **`POST /api/auth/session/activity`:** ruta protegida que Angular llama
+  ante actividad real (máximo una vez por minuto). Renueva
+  `last_activity_at` y devuelve un JWT nuevo con el mismo `sid`, sin
+  tocar el límite absoluto.
+- **`POST /api/auth/logout`:** revoca la sesión en PostgreSQL. Una sesión
+  revocada, o ya vencida, no puede reutilizarse aunque el JWT firmado
+  todavía "parezca" vigente.
+- Al vencer la sesión (por inactividad, por límite absoluto, o por un
+  `401` con `code: "SESSION_EXPIRED"` detectado por el interceptor), se
+  muestra el mismo `SessionExpiredModalComponent` de siempre, se limpia
+  la sesión local, y se sincroniza el cierre entre pestañas mediante
+  `BroadcastChannel`. El comportamiento es idéntico para cuentas
+  autenticadas con contraseña o con Google.
+
+### Variables de entorno (`backend/.env.example`)
+
+```env
+SESSION_IDLE_TIMEOUT_MINUTES=15
+SESSION_ABSOLUTE_TIMEOUT_HOURS=8
+JWT_EXPIRES_IN=15m
+```
+
+Para probar el vencimiento por inactividad en segundos en vez de
+minutos, cambia temporalmente (solo en local, nunca en `.env` real de
+producción):
+
+```env
+SESSION_IDLE_TIMEOUT_MINUTES=1
+JWT_EXPIRES_IN=1m
+```
+
+### Migración
+
+```bash
+pnpm --dir backend run db:migrate
+```
+
+Aplica `004_create_user_sessions.sql` (aditiva, no destructiva: no
+modifica `users` ni `incomes`).
+
+### Compilar
+
+```bash
+pnpm --dir backend run build
+pnpm --dir frontend run build
+```

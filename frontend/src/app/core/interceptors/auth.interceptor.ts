@@ -28,6 +28,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // realmente llevaba un token (para no disparar el aviso cuando el
       // 401 viene, por ejemplo, de un login con credenciales incorrectas,
       // que nunca envia Authorization).
+      //
+      // El backend distingue el vencimiento por inactividad (o por
+      // duracion maxima absoluta) con { code: "SESSION_EXPIRED" }, pero
+      // cualquier 401 sobre una peticion autenticada recibe el mismo
+      // tratamiento aqui: en todos los casos la sesion local ya no es
+      // valida. expireSession() es idempotente (activa una signal que ya
+      // puede estar en true), por lo que nunca se muestra mas de un
+      // modal aunque varias peticiones fallen a la vez, y no se reintenta
+      // renovar una sesion que el backend ya rechazo.
       if (token && error.status === 401) {
         authService.expireSession();
       }

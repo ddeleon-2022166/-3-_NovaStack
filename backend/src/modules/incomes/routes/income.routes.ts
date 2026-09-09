@@ -9,9 +9,11 @@ import {
 
 const router = Router();
 
-// Todas las rutas de ingresos requieren un JWT valido. Se aplica el
-// mismo authMiddleware que ya protege "/api/auth/me" (no se duplica).
-router.use(authMiddleware);
+// Todas las rutas de ingresos requieren un JWT y una sesion validos. Se
+// aplica el mismo authMiddleware que ya protege "/api/auth/me" (no se
+// duplica); se envuelve con asyncHandler porque ahora comprueba la
+// sesion en PostgreSQL de forma asincrona.
+router.use(asyncHandler(authMiddleware));
 
 // POST /api/incomes -> registra un nuevo ingreso del usuario autenticado
 router.post("/", asyncHandler(createIncomeController));
