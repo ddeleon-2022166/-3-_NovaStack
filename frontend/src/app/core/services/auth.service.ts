@@ -108,6 +108,20 @@ export class AuthService {
   }
 
   /**
+   * Reemplaza el token JWT actual por uno renovado (por ejemplo, tras una
+   * llamada exitosa a POST /api/auth/session/activity, disparada por
+   * actividad real del usuario) y reprograma el temporizador de
+   * expiracion local en base a su nuevo "exp". El "sid" interno no
+   * cambia; esto solo extiende, en el propio JWT, cuanto tiempo mas
+   * puede seguir usandose antes de que el backend vuelva a exigir
+   * actividad.
+   */
+  updateToken(token: string): void {
+    this.saveToken(token);
+    this.scheduleExpiryWatch(token);
+  }
+
+  /**
    * Vuelve a programar el temporizador de expiracion a partir de un token
    * ya guardado en localStorage. Se usa al arrancar la aplicacion (por
    * ejemplo, tras recargar la pagina), para que la sesion siga vigilada
