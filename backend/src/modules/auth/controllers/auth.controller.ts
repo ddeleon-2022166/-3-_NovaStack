@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { validateGoogleAuthInput, validateLoginInput } from "../validators/auth.validator";
-import { login, loginWithGoogle } from "../services/auth.service";
+import {
+  login,
+  loginWithGoogle,
+  logoutSession,
+  refreshSessionActivity,
+} from "../services/auth.service";
 import { AuthenticatedRequest } from "../../../middlewares/auth.middleware";
 import { getPublicUserById } from "../../users/services/user.service";
 
@@ -46,4 +51,38 @@ export async function meController(req: AuthenticatedRequest, res: Response): Pr
   const user = await getPublicUserById(userId);
 
   res.status(200).json({ user });
+}
+
+/**
+ * POST /api/auth/session/activity
+ * Ruta protegida: marca actividad real del usuario autenticado, renueva
+ * "last_activity_at" en PostgreSQL y devuelve un JWT nuevo (mismo "sid",
+ * otros SESSION_IDLE_TIMEOUT_MINUTES de duracion). El limite absoluto de
+ * la sesion nunca cambia.
+ */
+export async function sessionActivityController(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  const userId = req.userId as string;
+  const sessionId = req.sessionId as string;
+
+  const token = await refreshSessionActivity(userId, sessionId);
+
+  res.status(200).json({ token });
+}
+
+/**
+ * POST /api/auth/logout
+ * Ruta protegida: revoca en PostgreSQL la sesion identificada por "sid"
+ * en el JWT actual. Una sesion revocada no puede volver a utilizarse.
+ */
+export async function logoutController(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  const sessionId = req.sessionId as string;
+  await logoutSession(sessionId);
+
+  res.status(200).json({ message: "Sesion cerrada correctamente." });
 }
