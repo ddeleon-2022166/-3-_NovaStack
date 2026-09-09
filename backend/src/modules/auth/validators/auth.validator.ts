@@ -34,3 +34,28 @@ export function validateLoginInput(body: unknown): LoginInput {
 
   return { email: normalizedEmail, password };
 }
+
+export interface GoogleAuthInput {
+  idToken: string;
+}
+
+/**
+ * Valida el cuerpo de la solicitud de POST /api/auth/google.
+ * Solo verifica que llegue el ID token de Google como cadena no vacia;
+ * la verificacion criptografica real (firma, audiencia, emisor,
+ * expiracion) ocurre en el servicio, usando la biblioteca oficial de
+ * Google.
+ */
+export function validateGoogleAuthInput(body: unknown): GoogleAuthInput {
+  if (typeof body !== "object" || body === null) {
+    throw new AppError("Debes enviar el token de Google.", 400);
+  }
+
+  const { idToken } = body as Record<string, unknown>;
+
+  if (typeof idToken !== "string" || idToken.trim().length === 0) {
+    throw new AppError("El token de Google es obligatorio.", 400);
+  }
+
+  return { idToken };
+}

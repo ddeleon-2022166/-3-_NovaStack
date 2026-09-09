@@ -94,6 +94,24 @@
           }
         </button>
       </form>
+
+      @if (googleSignInAvailable()) {
+        <div class="auth-divider" role="separator">
+          <span>o continúa con</span>
+        </div>
+      }
+
+      <!--
+        Contenedor del botón oficial "Continuar con Google" (Google Identity
+        Services). Se renderiza vía JavaScript en login.component.ts; se deja
+        oculto mientras tanto para no mostrar un espacio vacío si el Client ID
+        no está configurado en este entorno.
+      -->
+      <div
+        #googleButtonContainer
+        class="google-button-container"
+        [class.google-button-container--visible]="googleSignInAvailable()"
+      ></div>
     </div>
   </section>
 </div>

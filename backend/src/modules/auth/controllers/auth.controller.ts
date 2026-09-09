@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { validateLoginInput } from "../validators/auth.validator";
-import { login } from "../services/auth.service";
+import { validateGoogleAuthInput, validateLoginInput } from "../validators/auth.validator";
+import { login, loginWithGoogle } from "../services/auth.service";
 import { AuthenticatedRequest } from "../../../middlewares/auth.middleware";
 import { getPublicUserById } from "../../users/services/user.service";
 
@@ -11,6 +11,23 @@ import { getPublicUserById } from "../../users/services/user.service";
 export async function loginController(req: Request, res: Response): Promise<void> {
   const credentials = validateLoginInput(req.body);
   const result = await login(credentials);
+
+  res.status(200).json({
+    message: "Inicio de sesion exitoso.",
+    token: result.token,
+    user: result.user,
+  });
+}
+
+/**
+ * POST /api/auth/google
+ * Verifica el ID token de Google Identity Services, crea o reutiliza el
+ * usuario correspondiente en PostgreSQL, y devuelve el JWT interno de
+ * NovaStack en el mismo formato que el login tradicional.
+ */
+export async function googleController(req: Request, res: Response): Promise<void> {
+  const credentials = validateGoogleAuthInput(req.body);
+  const result = await loginWithGoogle(credentials);
 
   res.status(200).json({
     message: "Inicio de sesion exitoso.",
