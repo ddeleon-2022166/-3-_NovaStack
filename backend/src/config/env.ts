@@ -19,6 +19,9 @@ interface EnvConfig {
     secret: string;
     expiresIn: string;
   };
+  google: {
+    clientId: string;
+  };
 }
 
 function getEnvVar(name: string, fallback?: string): string {
@@ -45,5 +48,11 @@ export const env: EnvConfig = {
   jwt: {
     secret: getEnvVar("JWT_SECRET"),
     expiresIn: getEnvVar("JWT_EXPIRES_IN", "1h"),
+  },
+  // Opcional: si no se define, el login tradicional sigue funcionando con
+  // normalidad; unicamente el endpoint POST /api/auth/google respondera
+  // con un error controlado indicando que falta configuracion.
+  google: {
+    clientId: getEnvVar("GOOGLE_CLIENT_ID", ""),
   },
 };
