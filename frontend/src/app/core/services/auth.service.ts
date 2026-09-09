@@ -2,7 +2,13 @@ import { Injectable, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, tap } from "rxjs";
 import { environment } from "../../../environments/environment";
-import { AuthUser, LoginCredentials, LoginResponse, MeResponse } from "../models/auth.models";
+import {
+  AuthUser,
+  GoogleLoginResponse,
+  LoginCredentials,
+  LoginResponse,
+  MeResponse,
+} from "../models/auth.models";
 
 // Clave usada en localStorage para guardar el JWT.
 // Estrategia sencilla y suficiente para el alcance academico de esta entrega.
@@ -38,14 +44,30 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials)
-      .pipe(
-        tap((response) => {
-          this.sessionExpired.set(false);
-          this.saveToken(response.token);
-          this.currentUser.set(response.user);
-          this.scheduleExpiryWatch(response.token);
-        })
-      );
+      .pipe(tap((response) => this.applySuccessfulLogin(response)));
+  }
+
+  /**
+   * Envia el ID token entregado por Google Identity Services al backend
+   * (POST /api/auth/google). El backend lo verifica, crea o reutiliza el
+   * usuario en PostgreSQL, y responde con el mismo formato que el login
+   * tradicional, por lo que se reutiliza exactamente la misma logica de
+   * sesion (token, usuario en memoria, temporizador de expiracion).
+   */
+  loginWithGoogle(googleIdToken: string): Observable<GoogleLoginResponse> {
+    return this.http
+      .post<GoogleLoginResponse>(`${environment.apiUrl}/auth/google`, {
+        idToken: googleIdToken,
+      })
+      .pipe(tap((response) => this.applySuccessfulLogin(response)));
+  }
+
+  /** Logica comun tras un login exitoso, sea tradicional o con Google. */
+  private applySuccessfulLogin(response: LoginResponse): void {
+    this.sessionExpired.set(false);
+    this.saveToken(response.token);
+    this.currentUser.set(response.user);
+    this.scheduleExpiryWatch(response.token);
   }
 
   /**
@@ -83,6 +105,20 @@ export class AuthService {
   /** El usuario ya vio el aviso de expiracion y confirmo volver al login. */
   acknowledgeExpiry(): void {
     this.sessionExpired.set(false);
+  }
+
+  /**
+   * Reemplaza el token JWT actual por uno renovado (por ejemplo, tras una
+   * llamada exitosa a POST /api/auth/session/activity, disparada por
+   * actividad real del usuario) y reprograma el temporizador de
+   * expiracion local en base a su nuevo "exp". El "sid" interno no
+   * cambia; esto solo extiende, en el propio JWT, cuanto tiempo mas
+   * puede seguir usandose antes de que el backend vuelva a exigir
+   * actividad.
+   */
+  updateToken(token: string): void {
+    this.saveToken(token);
+    this.scheduleExpiryWatch(token);
   }
 
   /**

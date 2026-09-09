@@ -253,6 +253,43 @@
   }
 }
 
+/* ---------- Separador y boton "Continuar con Google" ---------- */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+}
+
+.google-button-container {
+  display: none;
+  justify-content: center;
+
+  &--visible {
+    display: flex;
+  }
+
+  /* Google renderiza su propio iframe/boton dentro de este contenedor;
+     solo controlamos el ancho maximo para que respete el mismo ancho
+     que el resto del formulario. ::ng-deep es necesario porque ese
+     iframe lo inserta Google fuera del control de encapsulacion de
+     estilos de Angular. */
+  ::ng-deep iframe {
+    max-width: 100%;
+  }
+}
+
 /* ---------- Responsive: en pantallas angostas, una sola columna ---------- */
 
 @media (max-width: 900px) {

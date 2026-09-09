@@ -19,6 +19,15 @@ interface EnvConfig {
     secret: string;
     expiresIn: string;
   };
+  google: {
+    clientId: string;
+  };
+  session: {
+    // Minutos de inactividad tras los cuales una sesion vence.
+    idleTimeoutMinutes: number;
+    // Duracion maxima absoluta de una sesion, sin importar la actividad.
+    absoluteTimeoutHours: number;
+  };
 }
 
 function getEnvVar(name: string, fallback?: string): string {
@@ -44,6 +53,16 @@ export const env: EnvConfig = {
   },
   jwt: {
     secret: getEnvVar("JWT_SECRET"),
-    expiresIn: getEnvVar("JWT_EXPIRES_IN", "1h"),
+    expiresIn: getEnvVar("JWT_EXPIRES_IN", "15m"),
+  },
+  // Opcional: si no se define, el login tradicional sigue funcionando con
+  // normalidad; unicamente el endpoint POST /api/auth/google respondera
+  // con un error controlado indicando que falta configuracion.
+  google: {
+    clientId: getEnvVar("GOOGLE_CLIENT_ID", ""),
+  },
+  session: {
+    idleTimeoutMinutes: Number(getEnvVar("SESSION_IDLE_TIMEOUT_MINUTES", "15")),
+    absoluteTimeoutHours: Number(getEnvVar("SESSION_ABSOLUTE_TIMEOUT_HOURS", "8")),
   },
 };
