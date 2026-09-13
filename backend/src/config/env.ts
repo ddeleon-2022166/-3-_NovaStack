@@ -53,7 +53,7 @@ export const env: EnvConfig = {
   },
   jwt: {
     secret: getEnvVar("JWT_SECRET"),
-    expiresIn: getEnvVar("JWT_EXPIRES_IN", "15m"),
+    expiresIn: getEnvVar("JWT_EXPIRES_IN", "20m"),
   },
   // Opcional: si no se define, el login tradicional sigue funcionando con
   // normalidad; unicamente el endpoint POST /api/auth/google respondera

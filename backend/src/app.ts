@@ -3,6 +3,9 @@ import cors from "cors";
 import { env } from "./config/env";
 import authRoutes from "./modules/auth/routes/auth.routes";
 import incomesRoutes from "./modules/incomes/routes/income.routes";
+import expensesRoutes from "./modules/expenses/routes/expense.routes";
+import periodsRoutes from "./modules/periods/routes/period.routes";
+import objectivesRoutes from "./modules/objectives/routes/objective.routes";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware";
 
 /**
@@ -33,9 +36,22 @@ export function createApp(): Application {
   // Modulo de ingresos (registro y consulta, asociados al usuario autenticado)
   app.use("/api/incomes", incomesRoutes);
 
-  // Nota de arquitectura: en una proxima entrega se agregaran aqui los
-  // modulos "expenses" y "bills" (por ejemplo: app.use("/api/expenses", ...)),
-  // pero todavia no se implementan en esta entrega.
+  // Modulo de egresos (registro, consulta, edicion y eliminacion, asociados al usuario autenticado)
+  app.use("/api/expenses", expensesRoutes);
+
+  // Modulo de periodos (registro, consulta, edicion, activacion y eliminacion,
+  // asociados al usuario autenticado; totales calculados por rango de fechas
+  // contra "incomes" y "expenses")
+  app.use("/api/periods", periodsRoutes);
+
+  // Modulo de objetivos (registro, consulta, edicion, actualizacion de
+  // progreso y eliminacion, asociados al usuario autenticado; cada
+  // objetivo se relaciona con un periodo real via period_id)
+  app.use("/api/objectives", objectivesRoutes);
+
+  // Nota de arquitectura: en una proxima entrega se agregara aqui el
+  // modulo "bills" (cuentas a pagar), pero todavia no se implementa en
+  // esta entrega.
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
