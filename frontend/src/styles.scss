@@ -40,6 +40,13 @@
   --color-error: #e5626a;
   --color-error-bg: rgba(229, 98, 106, 0.12);
 
+  /* Unico color nuevo de esta entrega: verde para diferenciar ingresos en
+     Historial (egresos ya reutiliza --color-error, que es rojo/rosado).
+     Se eligio un verde-turquesa para no desentonar con el resto de la
+     paleta, ya dominada por azules y turquesas. */
+  --color-success: #34c98e;
+  --color-success-bg: rgba(52, 201, 142, 0.14);
+
   --font-heading: "Poppins", "Segoe UI", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;
 
