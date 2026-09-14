@@ -1,0 +1,365 @@
+<div class="periods-panel">
+  <div class="periods-panel__header">
+    <div>
+      <h1 class="periods-panel__title">Periodos</h1>
+      <p class="periods-panel__description">Administra tus periodos de control financiero.</p>
+    </div>
+    <button type="button" class="create-period-button" (click)="openCreateModal()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      Crear nuevo periodo
+    </button>
+  </div>
+
+  @if (actionError()) {
+    <p class="form-feedback form-feedback--error" role="alert">{{ actionError() }}</p>
+  }
+  @if (successMessage()) {
+    <p class="form-feedback form-feedback--success" role="status">{{ successMessage() }}</p>
+  }
+
+  <!-- ============ Tarjetas de resumen ============ -->
+  <section class="periods-summary-grid" aria-label="Resumen de periodos">
+    <article class="summary-card summary-card--active">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3.5" y="4.5" width="17" height="16" rx="2" stroke="currentColor" stroke-width="1.7" />
+          <line x1="3.5" y1="9.5" x2="20.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
+          <line x1="8" y1="2.8" x2="8" y2="6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          <line x1="16" y1="2.8" x2="16" y2="6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Periodo activo</span>
+        @if (activePeriod(); as active) {
+          <span class="summary-card__value summary-card__value--md">{{ active.name }}</span>
+          <span class="summary-card__caption">
+            {{ formatDateLabel(active.startDate) }} - {{ formatDateLabel(active.endDate) }}
+          </span>
+        } @else {
+          <span class="summary-card__value summary-card__value--md">Sin periodo activo</span>
+        }
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--count">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3.5" y="4.5" width="17" height="16" rx="2" stroke="currentColor" stroke-width="1.7" />
+          <line x1="3.5" y1="9.5" x2="20.5" y2="9.5" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de periodos</span>
+        <span class="summary-card__value">{{ totalPeriodsCount() }}</span>
+        <span class="summary-card__caption">Todos los periodos</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--days">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
+          <path d="M12 7.5v5l3.2 1.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Días transcurridos</span>
+        <span class="summary-card__value">{{ activePeriodDaysElapsed() }}</span>
+        <span class="summary-card__caption">de {{ activePeriodTotalDays() }} días</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--balance">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 15l6-6 4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15 6h5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Balance del periodo</span>
+        <span class="summary-card__value">{{ activePeriodBalanceLabel() }}</span>
+        <span class="summary-card__caption">Ingresos - Egresos</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ Búsqueda y filtros ============ -->
+  <section class="periods-filters" aria-label="Filtros de periodos">
+    <div class="periods-filters__row">
+      <label class="filter-field filter-field--grow">
+        <span class="filter-field__label">Buscar por nombre</span>
+        <div class="filter-field__search">
+          <input
+            class="filter-field__control"
+            type="text"
+            placeholder="Buscar periodo..."
+            [ngModel]="filters().search"
+            (ngModelChange)="updateFilter('search', $event)"
+          />
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6" />
+            <line x1="15.3" y1="15.3" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </div>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Estado</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="filters().status"
+          (ngModelChange)="updateFilter('status', $event)"
+        >
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Ordenar por</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="filters().sort"
+          (ngModelChange)="updateFilter('sort', $event)"
+        >
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <button type="button" class="clear-filters-button" (click)="clearFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ Listado de periodos ============ -->
+  <section class="periods-table" aria-label="Listado de periodos">
+    @if (isLoading()) {
+      <div class="periods-table__empty">Cargando periodos...</div>
+    } @else if (errorMessage()) {
+      <div class="periods-table__empty periods-table__empty--error">{{ errorMessage() }}</div>
+    } @else if (totalCount() > 0) {
+      <div class="periods-table__scroll">
+        <div class="periods-table__header">
+          <span>Periodo</span>
+          <span>Fecha inicio</span>
+          <span>Fecha fin</span>
+          <span>Días</span>
+          <span>Estado</span>
+          <span>Ingresos (Q)</span>
+          <span>Egresos (Q)</span>
+          <span>Balance (Q)</span>
+          <span>Acciones</span>
+        </div>
+
+        <div class="periods-table__rows">
+          @for (row of pagedRows(); track row.id) {
+            <div class="periods-table__row">
+              <span class="periods-table__name">
+                @if (row.status === "activo") {
+                  <span class="active-star" aria-hidden="true">★</span>
+                }
+                {{ row.name }}
+              </span>
+              <span>{{ row.startLabel }}</span>
+              <span>{{ row.endLabel }}</span>
+              <span>{{ row.daysCount }}</span>
+              <span>
+                <span
+                  class="status-badge"
+                  [class.status-badge--activo]="row.status === 'activo'"
+                  [class.status-badge--cerrado]="row.status === 'cerrado'"
+                  [class.status-badge--planificado]="row.status === 'planificado'"
+                >
+                  {{ statusLabel(row.status) }}
+                </span>
+              </span>
+              <span class="periods-table__amount periods-table__amount--income">{{ row.totalIncomeLabel }}</span>
+              <span class="periods-table__amount periods-table__amount--expense">{{ row.totalExpenseLabel }}</span>
+              <span class="periods-table__amount">{{ row.balanceLabel }}</span>
+              <span class="periods-table__actions">
+                <button type="button" class="row-action-button" (click)="viewDetail(row)" aria-label="Consultar detalle">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 12c1.6-4 5.5-7 10-7s8.4 3 10 7c-1.6 4-5.5 7-10 7s-8.4-3-10-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
+                  </svg>
+                </button>
+                <button type="button" class="row-action-button" (click)="startEdit(row)" aria-label="Editar periodo">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 20l0.9-3.6L15.8 5.5a1.6 1.6 0 0 1 2.3 0l1.4 1.4a1.6 1.6 0 0 1 0 2.3L8.6 20.1 4 20z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                @if (row.status !== "activo") {
+                  <button type="button" class="row-action-button" (click)="setActive(row)" aria-label="Establecer como periodo activo">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 3.5l2.6 5.6 6 .7-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6-4.4-4.2 6-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                }
+                <button type="button" class="row-action-button row-action-button--danger" (click)="confirmDelete(row)" aria-label="Eliminar periodo">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 6.5h15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    <path d="M9 6.5V4.8c0-.6.5-1.1 1.1-1.1h3.8c.6 0 1.1.5 1.1 1.1V6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M6.5 6.5l0.8 12.4c0 .7.6 1.2 1.3 1.2h6.8c.7 0 1.3-.5 1.3-1.2l0.8-12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="periods-pagination">
+        <span class="periods-pagination__summary">
+          Mostrando {{ rangeStart() }} a {{ rangeEnd() }} de {{ totalCount() }} periodos
+        </span>
+        <div class="periods-pagination__controls">
+          <button type="button" (click)="goToPage(1)" [disabled]="currentPage() === 1" aria-label="Primera página">«</button>
+          <button type="button" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Página anterior">‹</button>
+          <span class="periods-pagination__page">{{ currentPage() }}</span>
+          <button type="button" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Página siguiente">›</button>
+          <button type="button" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" aria-label="Última página">»</button>
+        </div>
+      </div>
+    } @else if (hasActiveFilters()) {
+      <div class="periods-table__empty">No se encontraron periodos con los filtros aplicados.</div>
+    } @else {
+      <div class="periods-table__empty">No hay periodos registrados todavía.</div>
+    }
+  </section>
+</div>
+
+<!-- ============ Detalle del periodo (solo lectura) ============ -->
+@if (selectedPeriod(); as period) {
+  <div class="periods-modal-backdrop" (click)="closeDetail()">
+    <div class="periods-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="periods-modal__close" (click)="closeDetail()" aria-label="Cerrar detalle">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <span
+        class="status-badge"
+        [class.status-badge--activo]="period.status === 'activo'"
+        [class.status-badge--cerrado]="period.status === 'cerrado'"
+        [class.status-badge--planificado]="period.status === 'planificado'"
+      >
+        {{ statusLabel(period.status) }}
+      </span>
+
+      <h2 class="periods-modal__title">{{ period.name }}</h2>
+
+      <dl class="periods-modal__list">
+        <div class="periods-modal__item">
+          <dt>Fecha de inicio</dt>
+          <dd>{{ formatDateLabel(period.startDate) }}</dd>
+        </div>
+        <div class="periods-modal__item">
+          <dt>Fecha de finalización</dt>
+          <dd>{{ formatDateLabel(period.endDate) }}</dd>
+        </div>
+        <div class="periods-modal__item">
+          <dt>Total de ingresos</dt>
+          <dd>{{ formatAmount(period.totalIncome) }}</dd>
+        </div>
+        <div class="periods-modal__item">
+          <dt>Total de egresos</dt>
+          <dd>{{ formatAmount(period.totalExpense) }}</dd>
+        </div>
+        <div class="periods-modal__item">
+          <dt>Balance</dt>
+          <dd>{{ formatAmount(period.balance) }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+}
+
+<!-- ============ Crear / editar periodo ============ -->
+@if (isFormOpen()) {
+  <div class="periods-modal-backdrop" (click)="closeForm()">
+    <div class="periods-modal periods-modal--form" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="periods-modal__close" (click)="closeForm()" aria-label="Cerrar formulario">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <h2 class="periods-modal__title">{{ isEditing() ? "Editar periodo" : "Crear nuevo periodo" }}</h2>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <label class="form-field">
+          <span class="form-field__label">Nombre del periodo</span>
+          <input
+            class="form-field__control"
+            type="text"
+            formControlName="name"
+            placeholder="Ej. Agosto 2026"
+          />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="form-field__error">El nombre es obligatorio.</span>
+          }
+        </label>
+
+        <div class="form-field-row">
+          <label class="form-field">
+            <span class="form-field__label">Fecha de inicio</span>
+            <input class="form-field__control" type="date" formControlName="startDate" />
+            @if (form.controls.startDate.invalid && form.controls.startDate.touched) {
+              <span class="form-field__error">La fecha de inicio es obligatoria.</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-field__label">Fecha de finalización</span>
+            <input class="form-field__control" type="date" formControlName="endDate" />
+            @if (form.controls.endDate.invalid && form.controls.endDate.touched) {
+              <span class="form-field__error">La fecha de finalización es obligatoria.</span>
+            }
+          </label>
+        </div>
+
+        @if (form.errors?.["dateRange"] && (form.controls.endDate.touched || form.controls.startDate.touched)) {
+          <span class="form-field__error">La fecha final no puede ser anterior a la fecha inicial.</span>
+        }
+
+        <label class="form-field">
+          <span class="form-field__label">Estado</span>
+          <select class="form-field__control form-field__control--select" formControlName="status">
+            <option value="planificado">Planificado</option>
+            <option value="cerrado">Cerrado</option>
+            <option value="activo">Activo</option>
+          </select>
+        </label>
+
+        @if (formError()) {
+          <p class="form-feedback form-feedback--error" role="alert">{{ formError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="save-button" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="save-button__spinner" aria-hidden="true"></span>
+              Guardando...
+            } @else if (isEditing()) {
+              Guardar cambios
+            } @else {
+              Crear periodo
+            }
+          </button>
+          <button type="button" class="cancel-edit-button" (click)="closeForm()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

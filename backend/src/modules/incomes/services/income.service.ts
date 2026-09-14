@@ -1,9 +1,12 @@
 import {
   IncomeRecord,
+  deleteIncomeForUser,
   findIncomesByUserId,
   insertIncome,
   sumIncomesByUserId,
+  updateIncomeForUser,
 } from "../models/income.model";
+import { AppError } from "../../../middlewares/error.middleware";
 import { CreateIncomeInput } from "../validators/income.validator";
 
 // Forma publica de un ingreso, tal como se devuelve al frontend.
@@ -64,4 +67,40 @@ export async function listIncomes(userId: string): Promise<PublicIncome[]> {
 export async function getIncomeSummary(userId: string): Promise<{ total: string }> {
   const total = await sumIncomesByUserId(userId);
   return { total };
+}
+
+/**
+ * Edita un ingreso existente. Lanza 404 si el registro no existe o no
+ * pertenece al usuario autenticado (el modelo ya filtra por user_id, asi
+ * que ambos casos llegan aqui de la misma forma).
+ */
+export async function updateIncome(
+  id: string,
+  userId: string,
+  input: CreateIncomeInput
+): Promise<PublicIncome> {
+  const updated = await updateIncomeForUser(id, userId, {
+    description: input.description,
+    amount: input.amount,
+    category: input.category,
+    incomeDate: input.incomeDate,
+  });
+
+  if (!updated) {
+    throw new AppError("El ingreso no existe o no te pertenece.", 404);
+  }
+
+  return toPublicIncome(updated);
+}
+
+/**
+ * Elimina un ingreso existente. Lanza 404 si el registro no existe o no
+ * pertenece al usuario autenticado.
+ */
+export async function deleteIncome(id: string, userId: string): Promise<void> {
+  const wasDeleted = await deleteIncomeForUser(id, userId);
+
+  if (!wasDeleted) {
+    throw new AppError("El ingreso no existe o no te pertenece.", 404);
+  }
 }

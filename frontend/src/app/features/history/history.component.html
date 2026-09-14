@@ -1,0 +1,280 @@
+<div class="history-panel">
+  <h1 class="history-panel__title">Historial</h1>
+  <p class="history-panel__description">Consulta el registro de todos tus movimientos.</p>
+
+  <!-- ============ Panel de filtros ============ -->
+  <section class="history-filters" aria-label="Filtros del historial">
+    <div class="history-filters__row">
+      <label class="filter-field">
+        <span class="filter-field__label">Periodo</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().period"
+          (ngModelChange)="updateDraftFilter('period', $event)"
+        >
+          @for (option of periodOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Tipo de movimiento</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().type"
+          (ngModelChange)="updateDraftFilter('type', $event)"
+        >
+          @for (option of typeOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Categoría</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().category"
+          (ngModelChange)="updateDraftFilter('category', $event)"
+        >
+          <option value="todas">Todas</option>
+          @for (category of availableCategories(); track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Fecha desde</span>
+        <input
+          class="filter-field__control filter-field__control--date"
+          type="date"
+          [ngModel]="draftFilters().dateFrom"
+          (ngModelChange)="updateDraftFilter('dateFrom', $event)"
+        />
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Fecha hasta</span>
+        <input
+          class="filter-field__control filter-field__control--date"
+          type="date"
+          [ngModel]="draftFilters().dateTo"
+          (ngModelChange)="updateDraftFilter('dateTo', $event)"
+        />
+      </label>
+
+      <label class="filter-field filter-field--grow">
+        <span class="filter-field__label">Buscar</span>
+        <div class="filter-field__search">
+          <input
+            class="filter-field__control"
+            type="text"
+            placeholder="Buscar por descripción o categoría..."
+            [ngModel]="draftFilters().search"
+            (ngModelChange)="updateDraftFilter('search', $event)"
+          />
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6" />
+            <line x1="15.3" y1="15.3" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </div>
+      </label>
+    </div>
+
+    @if (dateRangeError()) {
+      <p class="history-filters__error" role="alert">{{ dateRangeError() }}</p>
+    }
+
+    <div class="history-filters__actions">
+      <button type="button" class="apply-filters-button" (click)="applyFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 5h16l-6 7.5V19l-4 2v-8.5L4 5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        </svg>
+        Aplicar filtros
+      </button>
+      <button type="button" class="clear-filters-button" (click)="clearFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ Tarjetas de resumen ============ -->
+  <section class="history-summary-grid" aria-label="Resumen del historial">
+    <article class="summary-card summary-card--income">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 15l6-6 4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15 6h5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de ingresos</span>
+        <span class="summary-card__value">{{ summary().totalIncomeFormatted }}</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--expense">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 9l6 6 4-4 6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15 18h5v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de egresos</span>
+        <span class="summary-card__value">{{ summary().totalExpenseFormatted }}</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--balance">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
+          <circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Balance neto</span>
+        <span class="summary-card__value">{{ summary().netBalanceFormatted }}</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--count">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="3" width="14" height="18" rx="1.6" stroke="currentColor" stroke-width="1.7" />
+          <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="8" y1="16" x2="13" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de movimientos</span>
+        <span class="summary-card__value">{{ summary().count }}</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ Tabla del historial ============ -->
+  <section class="history-table" aria-label="Tabla de movimientos">
+    @if (isLoading()) {
+      <div class="history-table__empty">Cargando historial...</div>
+    } @else if (errorMessage()) {
+      <div class="history-table__empty history-table__empty--error">{{ errorMessage() }}</div>
+    } @else if (totalCount() > 0) {
+      <div class="history-table__header">
+        <span>Fecha</span>
+        <span>Descripción</span>
+        <span>Categoría</span>
+        <span>Tipo</span>
+        <span>Monto (Q)</span>
+        <span>Método / Origen</span>
+        <span>Acciones</span>
+      </div>
+
+      <div class="history-table__rows">
+        @for (movement of pagedMovements(); track movement.id) {
+          <div class="history-table__row">
+            <span>{{ formatDateLabel(movement.date) }}</span>
+            <span class="history-table__description">{{ movement.description }}</span>
+            <span>{{ movement.category }}</span>
+            <span>
+              <span
+                class="type-badge"
+                [class.type-badge--income]="movement.type === 'ingreso'"
+                [class.type-badge--expense]="movement.type === 'egreso'"
+              >
+                {{ movement.type === "ingreso" ? "Ingreso" : "Egreso" }}
+              </span>
+            </span>
+            <span
+              class="history-table__amount"
+              [class.history-table__amount--income]="movement.type === 'ingreso'"
+              [class.history-table__amount--expense]="movement.type === 'egreso'"
+            >
+              {{ formatAmount(movement) }}
+            </span>
+            <span class="history-table__muted">No especificado</span>
+            <span>
+              <button
+                type="button"
+                class="view-detail-button"
+                (click)="viewDetail(movement)"
+                aria-label="Ver detalle del movimiento"
+              >
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 12c1.6-4 5.5-7 10-7s8.4 3 10 7c-1.6 4-5.5 7-10 7s-8.4-3-10-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+              </button>
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="history-pagination">
+        <span class="history-pagination__summary">
+          Mostrando {{ rangeStart() }} a {{ rangeEnd() }} de {{ totalCount() }} movimientos
+        </span>
+        <div class="history-pagination__controls">
+          <button type="button" (click)="goToPage(1)" [disabled]="currentPage() === 1" aria-label="Primera página">«</button>
+          <button type="button" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Página anterior">‹</button>
+          <span class="history-pagination__page">{{ currentPage() }}</span>
+          <button type="button" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Página siguiente">›</button>
+          <button type="button" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" aria-label="Última página">»</button>
+        </div>
+      </div>
+    } @else if (hasActiveFilters()) {
+      <div class="history-table__empty">No se encontraron movimientos con los filtros aplicados.</div>
+    } @else {
+      <div class="history-table__empty">No hay movimientos registrados para el periodo seleccionado.</div>
+    }
+  </section>
+</div>
+
+<!-- ============ Detalle del movimiento ============ -->
+@if (selectedMovement(); as movement) {
+  <div class="history-detail-backdrop" (click)="closeDetail()">
+    <div class="history-detail" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="history-detail__close" (click)="closeDetail()" aria-label="Cerrar detalle">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <span
+        class="type-badge"
+        [class.type-badge--income]="movement.type === 'ingreso'"
+        [class.type-badge--expense]="movement.type === 'egreso'"
+      >
+        {{ movement.type === "ingreso" ? "Ingreso" : "Egreso" }}
+      </span>
+
+      <h2 class="history-detail__amount">{{ formatAmount(movement) }}</h2>
+
+      <dl class="history-detail__list">
+        <div class="history-detail__item">
+          <dt>Descripción</dt>
+          <dd>{{ movement.description }}</dd>
+        </div>
+        <div class="history-detail__item">
+          <dt>Categoría</dt>
+          <dd>{{ movement.category }}</dd>
+        </div>
+        <div class="history-detail__item">
+          <dt>Fecha</dt>
+          <dd>{{ formatDateLabel(movement.date) }}</dd>
+        </div>
+        <div class="history-detail__item">
+          <dt>Método / Origen</dt>
+          <dd>No especificado</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+}

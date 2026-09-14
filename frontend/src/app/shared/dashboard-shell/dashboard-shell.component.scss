@@ -20,6 +20,18 @@
   flex-direction: column;
   align-items: center;
   padding: 16px 10px 20px;
+  overflow: hidden;
+  transition: flex-basis 0.2s ease, width 0.2s ease, padding 0.2s ease;
+}
+
+/* Sidebar oculta: se colapsa a 0 (sin desbordar ni dejar espacio vacio)
+   y el panel principal ocupa todo el ancho disponible. */
+.dashboard-layout--sidebar-collapsed .sidebar {
+  width: 0;
+  flex: 0 0 0;
+  padding-left: 0;
+  padding-right: 0;
+  border: none;
 }
 
 .sidebar__brand {
@@ -182,6 +194,21 @@
   padding: 0 8px;
 }
 
+.topbar__nav-item--link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(12, 20, 36, 0.18);
+  }
+}
+
+.topbar__nav-item--active {
+  background: rgba(12, 20, 36, 0.28);
+  color: var(--brand-gold-soft);
+}
+
 .topbar__user {
   flex: 0 0 auto;
   display: flex;
@@ -230,6 +257,7 @@
   min-height: 0;
   padding: 32px;
   display: flex;
+  overflow-y: auto;
 }
 
 .dashboard-content__loading {

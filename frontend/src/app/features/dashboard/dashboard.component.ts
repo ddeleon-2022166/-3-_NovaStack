@@ -1,7 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
+import { forkJoin } from "rxjs";
 import { IncomeService } from "../../core/services/income.service";
+import { ExpenseService } from "../../core/services/expense.service";
 import { formatQuetzales } from "../../shared/utils/format-currency";
 
 // Una de las cuatro tarjetas de resumen.
@@ -17,13 +19,14 @@ interface SummaryCard {
  * en DashboardShellComponent (componente padre en la ruta), que es quien
  * renderiza este componente dentro de su <router-outlet>.
  *
- * En esta entrega solo "Ingresos" tiene persistencia real en PostgreSQL:
- * su total se consulta al backend (GET /api/incomes/summary) cada vez
- * que se entra al Dashboard. "Gastos" y "Cuentas a pagar" todavia no
- * existen como modulos, asi que se muestran fijos en Q0.00 hasta que se
- * implementen con su propia persistencia. El presupuesto restante se
- * calcula como ingresos - gastos - cuentas por pagar (por ahora, igual
- * al total de ingresos, porque los otros dos son cero).
+ * "Ingresos" y "Egresos" ya tienen persistencia real en PostgreSQL: sus
+ * totales se consultan al backend (GET /api/incomes/summary y
+ * GET /api/expenses/summary) cada vez que se entra al Dashboard, incluso
+ * al volver desde otra seccion, sin recargar la pagina ni volver a
+ * iniciar sesion. "Cuentas a pagar" todavia no existe como modulo, asi
+ * que se muestra fija en Q0.00. El presupuesto restante se calcula como
+ * ingresos - gastos - cuentas por pagar, nunca como un valor guardado
+ * manualmente.
  */
 @Component({
   selector: "app-dashboard",
@@ -34,18 +37,25 @@ interface SummaryCard {
 })
 export class DashboardComponent implements OnInit {
   private readonly incomeService = inject(IncomeService);
+  private readonly expenseService = inject(ExpenseService);
 
   readonly isLoadingSummary = signal(true);
 
-  // "Gastos" y "cuentas a pagar" no tienen modulo propio todavia: se
-  // dejan en cero de forma explicita, no como un valor inventado, sino
-  // como el estado real de "no implementado aun" para esta entrega.
-  private readonly expensesTotal = signal(0);
+  // "Cuentas a pagar" no tiene modulo propio todavia: se deja en cero de
+  // forma explicita, no como un valor inventado, sino como el estado
+  // real de "no implementado aun" para esta entrega.
   private readonly billsTotal = signal(0);
   private readonly incomesTotal = signal(0);
+  private readonly expensesTotal = signal(0);
 
-  readonly presupuestoRestante = computed(
-    () => this.incomesTotal() - this.expensesTotal() - this.billsTotal()
+  // Por diseño, el backend ya no permite registrar un egreso que supere
+  // el saldo disponible (ver expense.service.ts, assertSufficientFunds),
+  // asi que en condiciones normales esto nunca deberia dar negativo. Aun
+  // asi, se deja el limite explicito en 0 como salvaguarda de
+  // presentacion: el cliente nunca debe ver un presupuesto restante en
+  // numeros negativos.
+  readonly presupuestoRestante = computed(() =>
+    Math.max(0, this.incomesTotal() - this.expensesTotal() - this.billsTotal())
   );
 
   readonly summaryCards = computed<SummaryCard[]>(() => [
@@ -57,11 +67,16 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     // Se vuelve a consultar cada vez que se entra al Dashboard (por
-    // ejemplo, al volver desde Ingresos despues de registrar uno nuevo),
-    // sin necesidad de recargar la pagina ni volver a iniciar sesion.
-    this.incomeService.summary().subscribe({
-      next: (summary) => {
-        this.incomesTotal.set(Number(summary.total));
+    // ejemplo, al volver desde Ingresos o Egresos despues de registrar
+    // algo nuevo), sin necesidad de recargar la pagina ni volver a
+    // iniciar sesion.
+    forkJoin({
+      incomeSummary: this.incomeService.summary(),
+      expenseSummary: this.expenseService.summary(),
+    }).subscribe({
+      next: ({ incomeSummary, expenseSummary }) => {
+        this.incomesTotal.set(Number(incomeSummary.total));
+        this.expensesTotal.set(Number(expenseSummary.total));
         this.isLoadingSummary.set(false);
       },
       error: (error: HttpErrorResponse) => {
@@ -70,7 +85,7 @@ export class DashboardComponent implements OnInit {
         // expirada; para cualquier otro error, las tarjetas simplemente
         // se quedan mostrando Q0.00 en vez de un valor inventado.
         if (error.status !== 401) {
-          console.error("No fue posible obtener el resumen de ingresos.", error);
+          console.error("No fue posible obtener el resumen financiero.", error);
         }
       },
     });

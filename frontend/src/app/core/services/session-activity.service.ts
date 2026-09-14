@@ -1,5 +1,6 @@
 import { Injectable, NgZone, effect, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { retry, timer } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { AuthService } from "./auth.service";
 import { SESSION_CONFIG } from "../config/session.config";
@@ -22,8 +23,10 @@ type BroadcastMessage = { type: "logout" | "expired" };
  *   valida; si se cumple sin nueva actividad, cierra la sesion local y
  *   muestra el modal existente (via AuthService.expireSession()).
  * - Informar la actividad al backend (POST /api/auth/session/activity),
- *   limitado a como maximo una vez por minuto, y guardar el JWT
- *   renovado que el backend devuelve.
+ *   limitado como maximo a la frecuencia definida en SESSION_CONFIG
+ *   (por defecto, cada 30 segundos), con un par de reintentos cortos
+ *   ante fallas de red puntuales, y guardar el JWT renovado que el
+ *   backend devuelve.
  * - Comprobar la sesion al recuperar el foco o la visibilidad de la
  *   pestaña (por ejemplo, tras salir de suspension).
  * - Sincronizar el cierre de sesion entre pestañas mediante
@@ -179,6 +182,24 @@ export class SessionActivityService {
 
     this.http
       .post<SessionActivityResponse>(`${environment.apiUrl}/auth/session/activity`, {})
+      .pipe(
+        // Una red lenta o inestable (por ejemplo, la de una institucion
+        // con mas usuarios simultaneos) puede hacer fallar una peticion
+        // puntual sin que la sesion realmente haya vencido. Se reintenta
+        // dos veces, con una espera corta y creciente, antes de darse
+        // por vencido; si el backend responde 401 (sesion realmente
+        // vencida o revocada), no tiene sentido reintentar, asi que ese
+        // caso se excluye explicitamente.
+        retry({
+          count: 2,
+          delay: (error, attempt) => {
+            if (error?.status === 401) {
+              throw error;
+            }
+            return timer(attempt * 800);
+          },
+        })
+      )
       .subscribe({
         next: (response) => {
           if (response?.token) {
@@ -187,7 +208,7 @@ export class SessionActivityService {
         },
         // Si el backend responde 401, el interceptor ya se encarga de
         // llamar a AuthService.expireSession(); no se duplica esa
-        // logica aqui, y no se reintenta la llamada.
+        // logica aqui.
         error: () => undefined,
       });
   }

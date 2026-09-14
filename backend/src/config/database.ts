@@ -1,5 +1,15 @@
-import { Pool } from "pg";
+import { Pool, types } from "pg";
 import { env } from "./env";
+
+// node-postgres, por defecto, convierte las columnas DATE (oid 1082) en
+// objetos Date de JavaScript construidos en la hora local del proceso.
+// Al serializarse a JSON (res.json) ese Date se transforma en un ISO
+// string completo con hora y zona ("2026-09-13T06:00:00.000Z"), lo que
+// corrompe cualquier codigo que espere el formato "AAAA-MM-DD" (como ya
+// asumen los modelos de incomes, expenses y periods) y puede desplazar
+// el dia segun la zona horaria. Se desactiva esa conversion para que
+// PostgreSQL entregue las columnas DATE tal cual, como texto.
+types.setTypeParser(types.builtins.DATE, (value: string) => value);
 
 // Pool de conexiones reutilizable hacia PostgreSQL
 export const pool = new Pool({

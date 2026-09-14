@@ -29,6 +29,11 @@ export interface CreateIncomeResponse {
   income: Income;
 }
 
+export interface UpdateIncomeResponse {
+  message: string;
+  income: Income;
+}
+
 export interface ListIncomesResponse {
   incomes: Income[];
 }
