@@ -7,6 +7,7 @@ import {
   CreateIncomeResponse,
   IncomeSummaryResponse,
   ListIncomesResponse,
+  UpdateIncomeResponse,
 } from "../models/income.models";
 
 /**
@@ -32,5 +33,15 @@ export class IncomeService {
   /** GET /api/incomes/summary: total de ingresos del usuario autenticado. */
   summary(): Observable<IncomeSummaryResponse> {
     return this.http.get<IncomeSummaryResponse>(`${environment.apiUrl}/incomes/summary`);
+  }
+
+  /** PUT /api/incomes/:id: edita un ingreso existente del usuario autenticado. */
+  update(id: string, payload: CreateIncomeRequest): Observable<UpdateIncomeResponse> {
+    return this.http.put<UpdateIncomeResponse>(`${environment.apiUrl}/incomes/${id}`, payload);
+  }
+
+  /** DELETE /api/incomes/:id: elimina un ingreso existente del usuario autenticado. */
+  delete(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${environment.apiUrl}/incomes/${id}`);
   }
 }

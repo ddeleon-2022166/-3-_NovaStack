@@ -30,6 +30,33 @@ export const routes: Routes = [
         loadComponent: () =>
           import("./features/incomes/incomes.component").then((m) => m.IncomesComponent),
       },
+      {
+        path: "egresos",
+        loadComponent: () =>
+          import("./features/expenses/expenses.component").then((m) => m.ExpensesComponent),
+      },
+      {
+        path: "historial",
+        loadComponent: () =>
+          import("./features/history/history.component").then((m) => m.HistoryComponent),
+      },
+      {
+        path: "periodos",
+        loadComponent: () =>
+          import("./features/periods/periods.component").then((m) => m.PeriodsComponent),
+      },
+      {
+        path: "movimientos",
+        loadComponent: () =>
+          import("./features/movements/movements.component").then((m) => m.MovementsComponent),
+      },
+      {
+        path: "objetivos",
+        loadComponent: () =>
+          import("./features/objectives/objectives.component").then(
+            (m) => m.ObjectivesComponent
+          ),
+      },
     ],
   },
   { path: "**", redirectTo: "login" },

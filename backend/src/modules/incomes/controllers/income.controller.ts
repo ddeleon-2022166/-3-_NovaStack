@@ -1,7 +1,13 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../../../middlewares/auth.middleware";
-import { validateCreateIncomeInput } from "../validators/income.validator";
-import { createIncome, getIncomeSummary, listIncomes } from "../services/income.service";
+import { validateCreateIncomeInput, validateIncomeId } from "../validators/income.validator";
+import {
+  createIncome,
+  deleteIncome,
+  getIncomeSummary,
+  listIncomes,
+  updateIncome,
+} from "../services/income.service";
 
 /**
  * POST /api/incomes
@@ -49,4 +55,42 @@ export async function incomeSummaryController(
   const summary = await getIncomeSummary(userId);
 
   res.status(200).json(summary);
+}
+
+/**
+ * PUT /api/incomes/:id
+ * Edita un ingreso existente del usuario autenticado. Responde 404 si el
+ * registro no existe o pertenece a otro usuario.
+ */
+export async function updateIncomeController(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  const userId = req.userId as string;
+  const id = validateIncomeId(req.params.id);
+  const input = validateCreateIncomeInput(req.body);
+
+  const income = await updateIncome(id, userId, input);
+
+  res.status(200).json({
+    message: "Ingreso actualizado correctamente.",
+    income,
+  });
+}
+
+/**
+ * DELETE /api/incomes/:id
+ * Elimina un ingreso existente del usuario autenticado. Responde 404 si
+ * el registro no existe o pertenece a otro usuario.
+ */
+export async function deleteIncomeController(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  const userId = req.userId as string;
+  const id = validateIncomeId(req.params.id);
+
+  await deleteIncome(id, userId);
+
+  res.status(200).json({ message: "Ingreso eliminado correctamente." });
 }

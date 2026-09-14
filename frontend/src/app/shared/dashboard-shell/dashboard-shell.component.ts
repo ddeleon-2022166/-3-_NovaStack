@@ -1,24 +1,35 @@
 import { Component, OnInit, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
+import {
+  NavigationStart,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from "@angular/router";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "../../core/services/auth.service";
 
-// Un item de la navegacion lateral (Informe, Historial, Ingresos).
-// "route" solo se define para las secciones que ya existen; Informe e
-// Historial todavia no estan implementadas, por lo que se muestran sin
-// enlace (visualmente presentes, pero sin navegar a paginas inventadas).
+// Ancho de pantalla (en px) a partir del cual se considera "movil" para
+// efectos de la sidebar: por debajo de este umbral, navegar a una
+// seccion cierra la sidebar automaticamente (mismo breakpoint que ya
+// usan los estilos responsive del shell).
+const MOBILE_BREAKPOINT_PX = 860;
+
+// Un item de la navegacion lateral (Egresos, Historial, Ingresos).
+// Los tres tienen ruta real: Historial se conecto a /historial en esta
+// entrega (antes solo era un boton visual sin destino).
 interface SidebarNavItem {
   label: string;
-  icon: "informe" | "historial" | "ingresos";
-  route?: string;
+  icon: "egresos" | "historial" | "ingresos";
+  route: string;
 }
 
 // Un item de la barra superior (Periodos, Movimientos, Objetivos).
-// Se muestran visualmente (tal como pide la maqueta) pero no navegan a
-// ninguna pagina inventada, porque esas secciones no existen todavia.
+// "route" es opcional, pero los tres ya navegan a una pagina real.
 interface TopNavItem {
   label: string;
+  route?: string;
 }
 
 /**
@@ -47,6 +58,11 @@ export class DashboardShellComponent implements OnInit {
   readonly isVerifying = signal(true);
   readonly currentUser = this.authService.currentUser;
 
+  // Estado de visibilidad de la sidebar. Empieza visible siempre (tanto
+  // en escritorio como en movil); el boton de la topbar la alterna, y
+  // en pantallas angostas se cierra sola al navegar a una seccion.
+  readonly isSidebarOpen = signal(true);
+
   // Nombre a mostrar en la barra superior: el nombre publico del usuario
   // autenticado (obtenido del backend via AuthService), en mayusculas
   // para respetar el estilo tipografico de la maqueta.
@@ -59,18 +75,28 @@ export class DashboardShellComponent implements OnInit {
   readonly userIdentifier = computed(() => this.currentUser()?.email.split("@")[0] ?? "");
 
   readonly sidebarNavItems: SidebarNavItem[] = [
-    { label: "Informe", icon: "informe" },
-    { label: "Historial", icon: "historial" },
+    { label: "Informe", icon: "egresos", route: "/egresos" },
+    { label: "Historial", icon: "historial", route: "/historial" },
     { label: "Ingresos", icon: "ingresos", route: "/ingresos" },
   ];
 
   readonly topNavItems: TopNavItem[] = [
-    { label: "Periodos" },
-    { label: "Movimientos" },
-    { label: "Objetivos" },
+    { label: "Periodos", route: "/periodos" },
+    { label: "Movimientos", route: "/movimientos" },
+    { label: "Objetivos", route: "/objetivos" },
   ];
 
   ngOnInit(): void {
+    // En pantallas angostas, al navegar a otra seccion se cierra la
+    // sidebar automaticamente (patron habitual de menus moviles: la
+    // navegacion ya cumplio su proposito, no hace falta que el menu
+    // siga ocupando la pantalla).
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart && this.isMobileViewport()) {
+        this.isSidebarOpen.set(false);
+      }
+    });
+
     // Se confirma la sesion contra el backend una sola vez, antes de
     // mostrar cualquier seccion protegida (Dashboard, Ingresos, etc.).
     this.authService.fetchCurrentUser().subscribe({
@@ -97,5 +123,14 @@ export class DashboardShellComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(["/login"]);
+  }
+
+  /** Alterna la visibilidad de la sidebar (boton de la topbar). */
+  toggleSidebar(): void {
+    this.isSidebarOpen.update((open) => !open);
+  }
+
+  private isMobileViewport(): boolean {
+    return typeof window !== "undefined" && window.innerWidth <= MOBILE_BREAKPOINT_PX;
   }
 }

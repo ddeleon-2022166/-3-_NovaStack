@@ -1,0 +1,480 @@
+<div class="objectives-panel">
+  <div class="objectives-panel__header">
+    <div>
+      <h1 class="objectives-panel__title">Objetivos</h1>
+      <p class="objectives-panel__description">
+        Establece, consulta y da seguimiento a tus metas financieras.
+      </p>
+    </div>
+    <button type="button" class="create-objective-button" (click)="openCreateModal()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      Nuevo objetivo
+    </button>
+  </div>
+
+  @if (actionError()) {
+    <p class="form-feedback form-feedback--error" role="alert">{{ actionError() }}</p>
+  }
+  @if (successMessage()) {
+    <p class="form-feedback form-feedback--success" role="status">{{ successMessage() }}</p>
+  }
+
+  <!-- ============ Tarjetas de resumen ============ -->
+  <section class="objectives-summary-grid" aria-label="Resumen de objetivos">
+    <article class="summary-card summary-card--total">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7" />
+          <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.5" />
+          <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de objetivos</span>
+        <span class="summary-card__value">{{ totalObjectivesCount() }}</span>
+        <span class="summary-card__caption">Todos los objetivos</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--active">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 3v18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          <path d="M6 4h11l-2.5 3.2L17 10.4H6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Objetivos activos</span>
+        <span class="summary-card__value">{{ activeObjectivesCount() }}</span>
+        <span class="summary-card__caption">En progreso</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--completed">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7" />
+          <path d="M7.5 12.3l2.8 2.8 6-6.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Objetivos cumplidos</span>
+        <span class="summary-card__value">{{ completedObjectivesCount() }}</span>
+        <span class="summary-card__caption">Completados</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--saved">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.5l2.2 4.9 5.3.6-4 3.7 1 5.3-4.5-2.6-4.5 2.6 1-5.3-4-3.7 5.3-.6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Ahorro total objetivo</span>
+        <span class="summary-card__value">{{ totalSavedLabel() }}</span>
+        <span class="summary-card__caption">Meta global</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ Búsqueda y filtros ============ -->
+  <section class="objectives-filters" aria-label="Filtros de objetivos">
+    <div class="objectives-filters__row">
+      <label class="filter-field filter-field--grow">
+        <span class="filter-field__label">Buscar por nombre</span>
+        <div class="filter-field__search">
+          <input
+            class="filter-field__control"
+            type="text"
+            placeholder="Buscar objetivo..."
+            [ngModel]="filters().search"
+            (ngModelChange)="updateFilter('search', $event)"
+          />
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6" />
+            <line x1="15.3" y1="15.3" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </div>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Estado</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="filters().status"
+          (ngModelChange)="updateFilter('status', $event)"
+        >
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Tipo de objetivo</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="filters().category"
+          (ngModelChange)="updateFilter('category', $event)"
+        >
+          <option value="todos">Todos</option>
+          @for (option of categoryOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Periodo</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="filters().periodId"
+          (ngModelChange)="updateFilter('periodId', $event)"
+        >
+          <option value="todos">Todos</option>
+          @for (period of periods(); track period.id) {
+            <option [value]="period.id">{{ period.name }}</option>
+          }
+        </select>
+      </label>
+
+      <button type="button" class="clear-filters-button" (click)="clearFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ Listado de objetivos ============ -->
+  <section class="objectives-table" aria-label="Listado de objetivos">
+    @if (isLoading()) {
+      <div class="objectives-table__empty">Cargando objetivos...</div>
+    } @else if (errorMessage()) {
+      <div class="objectives-table__empty objectives-table__empty--error">{{ errorMessage() }}</div>
+    } @else if (totalCount() > 0) {
+      <div class="objectives-table__scroll">
+        <div class="objectives-table__header">
+          <span>Objetivo</span>
+          <span>Tipo</span>
+          <span>Periodo</span>
+          <span>Meta (Q)</span>
+          <span>Progreso</span>
+          <span>Actual (Q)</span>
+          <span>Estado</span>
+          <span>Acciones</span>
+        </div>
+
+        <div class="objectives-table__rows">
+          @for (row of pagedRows(); track row.id) {
+            <div class="objectives-table__row">
+              <span class="objectives-table__name-cell">
+                <span class="objectives-table__name">{{ row.name }}</span>
+                @if (row.description) {
+                  <span class="objectives-table__subtext">{{ row.description }}</span>
+                }
+              </span>
+              <span>
+                <span class="category-badge">{{ categoryLabel(row.category) }}</span>
+              </span>
+              <span class="objectives-table__subtext">{{ row.periodName }}</span>
+              <span class="objectives-table__amount">{{ row.targetAmountLabel }}</span>
+              <span class="objectives-table__progress">
+                <span class="progress-bar">
+                  <span
+                    class="progress-bar__fill"
+                    [class.progress-bar__fill--complete]="row.status === 'cumplido'"
+                    [class.progress-bar__fill--started]="row.status === 'en_progreso'"
+                    [style.width.%]="row.progressPercentage"
+                  ></span>
+                </span>
+                <span class="progress-bar__label">{{ row.progressPercentage }}%</span>
+              </span>
+              <span class="objectives-table__amount objectives-table__amount--current">{{ row.currentAmountLabel }}</span>
+              <span>
+                <span
+                  class="status-badge"
+                  [class.status-badge--no_iniciado]="row.status === 'no_iniciado'"
+                  [class.status-badge--en_progreso]="row.status === 'en_progreso'"
+                  [class.status-badge--cumplido]="row.status === 'cumplido'"
+                >
+                  {{ statusLabel(row.status) }}
+                </span>
+              </span>
+              <span class="objectives-table__actions">
+                <button type="button" class="row-action-button" (click)="viewDetail(row)" aria-label="Consultar detalle">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 12c1.6-4 5.5-7 10-7s8.4 3 10 7c-1.6 4-5.5 7-10 7s-8.4-3-10-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
+                  </svg>
+                </button>
+                <button type="button" class="row-action-button" (click)="startEdit(row)" aria-label="Editar objetivo">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 20l0.9-3.6L15.8 5.5a1.6 1.6 0 0 1 2.3 0l1.4 1.4a1.6 1.6 0 0 1 0 2.3L8.6 20.1 4 20z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                @if (row.status !== "cumplido") {
+                  <button type="button" class="row-action-button" (click)="openProgressModal(row)" aria-label="Actualizar progreso">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 3.5l2.6 5.6 6 .7-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6-4.4-4.2 6-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                }
+                <button type="button" class="row-action-button row-action-button--danger" (click)="confirmDelete(row)" aria-label="Eliminar objetivo">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 6.5h15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    <path d="M9 6.5V4.8c0-.6.5-1.1 1.1-1.1h3.8c.6 0 1.1.5 1.1 1.1V6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M6.5 6.5l0.8 12.4c0 .7.6 1.2 1.3 1.2h6.8c.7 0 1.3-.5 1.3-1.2l0.8-12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="objectives-pagination">
+        <span class="objectives-pagination__summary">
+          Mostrando {{ rangeStart() }} a {{ rangeEnd() }} de {{ totalCount() }} objetivos
+        </span>
+        <div class="objectives-pagination__controls">
+          <button type="button" (click)="goToPage(1)" [disabled]="currentPage() === 1" aria-label="Primera página">«</button>
+          <button type="button" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Página anterior">‹</button>
+          <span class="objectives-pagination__page">{{ currentPage() }}</span>
+          <button type="button" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Página siguiente">›</button>
+          <button type="button" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" aria-label="Última página">»</button>
+        </div>
+      </div>
+    } @else if (hasActiveFilters()) {
+      <div class="objectives-table__empty">No se encontraron objetivos con los filtros aplicados.</div>
+    } @else {
+      <div class="objectives-table__empty">No hay objetivos registrados todavía.</div>
+    }
+  </section>
+</div>
+
+<!-- ============ Detalle del objetivo (solo lectura) ============ -->
+@if (selectedObjective(); as objective) {
+  <div class="objectives-modal-backdrop" (click)="closeDetail()">
+    <div class="objectives-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="objectives-modal__close" (click)="closeDetail()" aria-label="Cerrar detalle">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <span
+        class="status-badge"
+        [class.status-badge--no_iniciado]="objective.status === 'no_iniciado'"
+        [class.status-badge--en_progreso]="objective.status === 'en_progreso'"
+        [class.status-badge--cumplido]="objective.status === 'cumplido'"
+      >
+        {{ statusLabel(objective.status) }}
+      </span>
+
+      <h2 class="objectives-modal__title">{{ objective.name }}</h2>
+      @if (objective.description) {
+        <p class="objectives-modal__subtitle">{{ objective.description }}</p>
+      }
+
+      <dl class="objectives-modal__list">
+        <div class="objectives-modal__item">
+          <dt>Tipo</dt>
+          <dd>{{ categoryLabel(objective.category) }}</dd>
+        </div>
+        <div class="objectives-modal__item">
+          <dt>Periodo</dt>
+          <dd>{{ objective.periodName }}</dd>
+        </div>
+        <div class="objectives-modal__item">
+          <dt>Meta</dt>
+          <dd>{{ formatAmount(objective.targetAmount) }}</dd>
+        </div>
+        <div class="objectives-modal__item">
+          <dt>Ahorro actual</dt>
+          <dd>{{ formatAmount(objective.currentAmount) }}</dd>
+        </div>
+        <div class="objectives-modal__item">
+          <dt>Progreso</dt>
+          <dd>{{ objective.progressPercentage }}%</dd>
+        </div>
+        <div class="objectives-modal__item">
+          <dt>Fecha límite</dt>
+          <dd>{{ formatDateLabel(objective.deadline) }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+}
+
+<!-- ============ Crear / editar objetivo ============ -->
+@if (isFormOpen()) {
+  <div class="objectives-modal-backdrop" (click)="closeForm()">
+    <div class="objectives-modal objectives-modal--form" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="objectives-modal__close" (click)="closeForm()" aria-label="Cerrar formulario">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <h2 class="objectives-modal__title">{{ isEditing() ? "Editar objetivo" : "Nuevo objetivo" }}</h2>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <label class="form-field">
+          <span class="form-field__label">Nombre del objetivo</span>
+          <input
+            class="form-field__control"
+            type="text"
+            formControlName="name"
+            placeholder="Ej. Fondo de emergencia"
+          />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="form-field__error">El nombre es obligatorio.</span>
+          }
+        </label>
+
+        <label class="form-field">
+          <span class="form-field__label">Descripción</span>
+          <input
+            class="form-field__control"
+            type="text"
+            formControlName="description"
+            placeholder="Ej. Guardar para imprevistos"
+          />
+        </label>
+
+        <div class="form-field-row">
+          <label class="form-field">
+            <span class="form-field__label">Tipo de objetivo</span>
+            <select class="form-field__control form-field__control--select" formControlName="category">
+              @for (option of categoryOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span class="form-field__label">Periodo</span>
+            <select class="form-field__control form-field__control--select" formControlName="periodId">
+              @for (period of periods(); track period.id) {
+                <option [value]="period.id">{{ period.name }}</option>
+              }
+            </select>
+            @if (form.controls.periodId.invalid && form.controls.periodId.touched) {
+              <span class="form-field__error">Debes seleccionar un periodo.</span>
+            }
+          </label>
+        </div>
+
+        <div class="form-field-row">
+          <label class="form-field">
+            <span class="form-field__label">Monto de la meta</span>
+            <input
+              class="form-field__control"
+              type="number"
+              step="0.01"
+              min="0.01"
+              formControlName="targetAmount"
+            />
+            @if (form.controls.targetAmount.invalid && form.controls.targetAmount.touched) {
+              <span class="form-field__error">La meta debe ser mayor que cero.</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-field__label">Monto inicial / actual</span>
+            <input
+              class="form-field__control"
+              type="number"
+              step="0.01"
+              min="0"
+              formControlName="currentAmount"
+            />
+            @if (form.controls.currentAmount.invalid && form.controls.currentAmount.touched) {
+              <span class="form-field__error">El monto no puede ser negativo.</span>
+            }
+          </label>
+        </div>
+
+        <label class="form-field">
+          <span class="form-field__label">Fecha límite (opcional)</span>
+          <input class="form-field__control" type="date" formControlName="deadline" />
+        </label>
+
+        @if (formError()) {
+          <p class="form-feedback form-feedback--error" role="alert">{{ formError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="save-button" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="save-button__spinner" aria-hidden="true"></span>
+              Guardando...
+            } @else if (isEditing()) {
+              Guardar cambios
+            } @else {
+              Crear objetivo
+            }
+          </button>
+          <button type="button" class="cancel-edit-button" (click)="closeForm()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ============ Registrar / actualizar progreso ============ -->
+@if (isProgressModalOpen()) {
+  <div class="objectives-modal-backdrop" (click)="closeProgressModal()">
+    <div class="objectives-modal objectives-modal--progress" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="objectives-modal__close" (click)="closeProgressModal()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <h2 class="objectives-modal__title">Actualizar progreso</h2>
+      @if (progressTarget(); as target) {
+        <p class="objectives-modal__subtitle">
+          {{ target.name }} · Meta {{ formatAmount(target.targetAmount) }}
+        </p>
+      }
+
+      <form [formGroup]="progressForm" (ngSubmit)="submitProgress()" novalidate>
+        <label class="form-field">
+          <span class="form-field__label">Monto acumulado actual</span>
+          <input
+            class="form-field__control"
+            type="number"
+            step="0.01"
+            min="0"
+            formControlName="currentAmount"
+          />
+          @if (progressForm.controls.currentAmount.invalid && progressForm.controls.currentAmount.touched) {
+            <span class="form-field__error">El monto no puede ser negativo.</span>
+          }
+        </label>
+
+        @if (progressError()) {
+          <p class="form-feedback form-feedback--error" role="alert">{{ progressError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="save-button" [disabled]="progressForm.invalid || isSubmittingProgress()">
+            @if (isSubmittingProgress()) {
+              <span class="save-button__spinner" aria-hidden="true"></span>
+              Guardando...
+            } @else {
+              Guardar progreso
+            }
+          </button>
+          <button type="button" class="cancel-edit-button" (click)="closeProgressModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

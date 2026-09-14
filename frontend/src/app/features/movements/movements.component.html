@@ -1,0 +1,417 @@
+<div class="movements-panel">
+  <div class="movements-panel__header">
+    <div>
+      <h1 class="movements-panel__title">Movimientos</h1>
+      <p class="movements-panel__description">
+        Registra, consulta y administra tus movimientos financieros.
+      </p>
+    </div>
+    <button type="button" class="new-movement-button" (click)="startCreate()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      Nuevo movimiento
+    </button>
+  </div>
+
+  @if (actionError()) {
+    <p class="form-feedback form-feedback--error" role="alert">{{ actionError() }}</p>
+  }
+  @if (successMessage()) {
+    <p class="form-feedback form-feedback--success" role="status">{{ successMessage() }}</p>
+  }
+
+  <!-- ============ Tarjetas de resumen ============ -->
+  <section class="movements-summary-grid" aria-label="Resumen de movimientos">
+    <article class="summary-card summary-card--income">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 15l6-6 4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15 6h5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de ingresos</span>
+        <span class="summary-card__value">{{ summary().totalIncomeFormatted }}</span>
+        <span class="summary-card__caption">Este periodo</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--expense">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 9l6 6 4-4 6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15 18h5v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de egresos</span>
+        <span class="summary-card__value">{{ summary().totalExpenseFormatted }}</span>
+        <span class="summary-card__caption">Este periodo</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--balance">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="12" cy="7.5" rx="8" ry="3.2" stroke="currentColor" stroke-width="1.7" />
+          <path d="M4 7.5v9c0 1.77 3.58 3.2 8 3.2s8-1.43 8-3.2v-9" stroke="currentColor" stroke-width="1.7" />
+          <path d="M4 12.5c0 1.77 3.58 3.2 8 3.2s8-1.43 8-3.2" stroke="currentColor" stroke-width="1.7" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Balance neto</span>
+        <span class="summary-card__value">{{ summary().netBalanceFormatted }}</span>
+        <span class="summary-card__caption">Ingresos - Egresos</span>
+      </div>
+    </article>
+
+    <article class="summary-card summary-card--count">
+      <span class="summary-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="3" width="14" height="18" rx="1.6" stroke="currentColor" stroke-width="1.7" />
+          <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <line x1="8" y1="16" x2="13" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="summary-card__text">
+        <span class="summary-card__label">Total de movimientos</span>
+        <span class="summary-card__value">{{ summary().count }}</span>
+        <span class="summary-card__caption">Este periodo</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ Filtros ============ -->
+  <section class="movements-filters" aria-label="Filtros de movimientos">
+    <div class="movements-filters__row">
+      <label class="filter-field">
+        <span class="filter-field__label">Periodo</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().periodId"
+          (ngModelChange)="updateDraftFilter('periodId', $event)"
+        >
+          <option value="todos">Todos</option>
+          @for (period of periods(); track period.id) {
+            <option [value]="period.id">{{ periodLabel(period) }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Tipo de movimiento</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().type"
+          (ngModelChange)="updateDraftFilter('type', $event)"
+        >
+          @for (option of typeOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Categoría</span>
+        <select
+          class="filter-field__control"
+          [ngModel]="draftFilters().category"
+          (ngModelChange)="updateDraftFilter('category', $event)"
+        >
+          <option value="todas">Todas</option>
+          @for (category of availableCategories(); track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Fecha inicial</span>
+        <input
+          class="filter-field__control filter-field__control--date"
+          type="date"
+          [ngModel]="draftFilters().dateFrom"
+          (ngModelChange)="updateDraftFilter('dateFrom', $event)"
+        />
+      </label>
+
+      <label class="filter-field">
+        <span class="filter-field__label">Fecha final</span>
+        <input
+          class="filter-field__control filter-field__control--date"
+          type="date"
+          [ngModel]="draftFilters().dateTo"
+          (ngModelChange)="updateDraftFilter('dateTo', $event)"
+        />
+      </label>
+
+      <label class="filter-field filter-field--grow">
+        <span class="filter-field__label">Buscar</span>
+        <div class="filter-field__search">
+          <input
+            class="filter-field__control"
+            type="text"
+            placeholder="Buscar por descripción..."
+            [ngModel]="draftFilters().search"
+            (ngModelChange)="updateDraftFilter('search', $event)"
+          />
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6" />
+            <line x1="15.3" y1="15.3" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </div>
+      </label>
+    </div>
+
+    @if (dateRangeError()) {
+      <p class="movements-filters__error" role="alert">{{ dateRangeError() }}</p>
+    }
+
+    <div class="movements-filters__actions">
+      <button type="button" class="apply-filters-button" (click)="applyFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 5h16l-6 7.5V19l-4 2v-8.5L4 5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        </svg>
+        Aplicar filtros
+      </button>
+      <button type="button" class="clear-filters-button" (click)="clearFilters()">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <div class="movements-content">
+    <!-- ============ Formulario crear / editar ============ -->
+    <section class="movement-form-card" aria-label="Registrar o editar movimiento">
+      <h2 class="movement-form-card__title">
+        {{ isEditing() ? "Editar movimiento" : "Registrar nuevo movimiento" }}
+      </h2>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="form-field">
+          <span class="form-field__label">Tipo de movimiento</span>
+          <div class="type-toggle">
+            <button
+              type="button"
+              class="type-toggle__button type-toggle__button--income"
+              [class.type-toggle__button--active]="formType() === 'ingreso'"
+              [disabled]="isEditing()"
+              (click)="selectFormType('ingreso')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Ingreso
+            </button>
+            <button
+              type="button"
+              class="type-toggle__button type-toggle__button--expense"
+              [class.type-toggle__button--active]="formType() === 'egreso'"
+              [disabled]="isEditing()"
+              (click)="selectFormType('egreso')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              Egreso
+            </button>
+          </div>
+        </div>
+
+        <label class="form-field">
+          <span class="form-field__label">Descripción</span>
+          <input
+            class="form-field__control"
+            type="text"
+            formControlName="description"
+            placeholder="Ej. Salario mensual"
+          />
+          @if (form.controls.description.invalid && form.controls.description.touched) {
+            <span class="form-field__error">La descripción es obligatoria.</span>
+          }
+        </label>
+
+        <label class="form-field">
+          <span class="form-field__label">Monto (Q)</span>
+          <input
+            class="form-field__control"
+            type="text"
+            inputmode="decimal"
+            formControlName="amount"
+            placeholder="Ej. 250.00"
+          />
+          @if (form.controls.amount.invalid && form.controls.amount.touched) {
+            <span class="form-field__error">Ingrese un monto válido, mayor que cero.</span>
+          }
+        </label>
+
+        <label class="form-field">
+          <span class="form-field__label">Categoría</span>
+          <select class="form-field__control form-field__control--select" formControlName="category">
+            <option value="" disabled>Seleccionar categoría</option>
+            @for (category of formCategories(); track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+          @if (form.controls.category.invalid && form.controls.category.touched) {
+            <span class="form-field__error">Seleccione una categoría.</span>
+          }
+        </label>
+
+        <label class="form-field">
+          <span class="form-field__label">Fecha</span>
+          <input class="form-field__control" type="date" formControlName="date" />
+          @if (form.controls.date.invalid && form.controls.date.touched) {
+            <span class="form-field__error">La fecha es obligatoria.</span>
+          }
+        </label>
+
+        @if (formError()) {
+          <p class="form-feedback form-feedback--error" role="alert">{{ formError() }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="save-button" [disabled]="form.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="save-button__spinner" aria-hidden="true"></span>
+              Guardando...
+            } @else if (isEditing()) {
+              Guardar cambios
+            } @else {
+              Guardar movimiento
+            }
+          </button>
+          <button type="button" class="cancel-edit-button" (click)="cancelForm()">
+            {{ isEditing() ? "Cancelar" : "Limpiar formulario" }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============ Listado de movimientos ============ -->
+    <section class="movements-table" aria-label="Listado de movimientos">
+      @if (isLoading()) {
+        <div class="movements-table__empty">Cargando movimientos...</div>
+      } @else if (errorMessage()) {
+        <div class="movements-table__empty movements-table__empty--error">{{ errorMessage() }}</div>
+      } @else if (totalCount() > 0) {
+        <div class="movements-table__scroll">
+          <div class="movements-table__header">
+            <span>Fecha</span>
+            <span>Descripción</span>
+            <span>Categoría</span>
+            <span>Tipo</span>
+            <span>Monto (Q)</span>
+            <span>Acciones</span>
+          </div>
+
+          <div class="movements-table__rows">
+            @for (movement of pagedMovements(); track movement.id) {
+              <div class="movements-table__row">
+                <span>{{ formatDateLabel(movement.date) }}</span>
+                <span class="movements-table__description">{{ movement.description }}</span>
+                <span>{{ movement.category }}</span>
+                <span>
+                  <span
+                    class="type-badge"
+                    [class.type-badge--income]="movement.type === 'ingreso'"
+                    [class.type-badge--expense]="movement.type === 'egreso'"
+                  >
+                    {{ movement.type === "ingreso" ? "Ingreso" : "Egreso" }}
+                  </span>
+                </span>
+                <span
+                  class="movements-table__amount"
+                  [class.movements-table__amount--income]="movement.type === 'ingreso'"
+                  [class.movements-table__amount--expense]="movement.type === 'egreso'"
+                >
+                  {{ formatAmount(movement) }}
+                </span>
+                <span class="movements-table__actions">
+                  <button type="button" class="row-action-button" (click)="viewDetail(movement)" aria-label="Ver detalle del movimiento">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2 12c1.6-4 5.5-7 10-7s8.4 3 10 7c-1.6 4-5.5 7-10 7s-8.4-3-10-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
+                    </svg>
+                  </button>
+                  <button type="button" class="row-action-button" (click)="startEdit(movement)" aria-label="Editar movimiento">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 20l0.9-3.6L15.8 5.5a1.6 1.6 0 0 1 2.3 0l1.4 1.4a1.6 1.6 0 0 1 0 2.3L8.6 20.1 4 20z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <button type="button" class="row-action-button row-action-button--danger" (click)="confirmDelete(movement)" aria-label="Eliminar movimiento">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4.5 6.5h15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                      <path d="M9 6.5V4.8c0-.6.5-1.1 1.1-1.1h3.8c.6 0 1.1.5 1.1 1.1V6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M6.5 6.5l0.8 12.4c0 .7.6 1.2 1.3 1.2h6.8c.7 0 1.3-.5 1.3-1.2l0.8-12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="movements-pagination">
+          <span class="movements-pagination__summary">
+            Mostrando {{ rangeStart() }} a {{ rangeEnd() }} de {{ totalCount() }} movimientos
+          </span>
+          <div class="movements-pagination__controls">
+            <button type="button" (click)="goToPage(1)" [disabled]="currentPage() === 1" aria-label="Primera página">«</button>
+            <button type="button" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Página anterior">‹</button>
+            <span class="movements-pagination__page">{{ currentPage() }}</span>
+            <button type="button" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Página siguiente">›</button>
+            <button type="button" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" aria-label="Última página">»</button>
+          </div>
+        </div>
+      } @else if (hasActiveFilters()) {
+        <div class="movements-table__empty">No se encontraron movimientos con los filtros aplicados.</div>
+      } @else {
+        <div class="movements-table__empty">No hay movimientos registrados todavía.</div>
+      }
+    </section>
+  </div>
+</div>
+
+<!-- ============ Detalle del movimiento (solo lectura) ============ -->
+@if (selectedMovement(); as movement) {
+  <div class="movements-modal-backdrop" (click)="closeDetail()">
+    <div class="movements-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <button type="button" class="movements-modal__close" (click)="closeDetail()" aria-label="Cerrar detalle">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <span
+        class="type-badge"
+        [class.type-badge--income]="movement.type === 'ingreso'"
+        [class.type-badge--expense]="movement.type === 'egreso'"
+      >
+        {{ movement.type === "ingreso" ? "Ingreso" : "Egreso" }}
+      </span>
+
+      <h2 class="movements-modal__amount">{{ formatAmount(movement) }}</h2>
+
+      <dl class="movements-modal__list">
+        <div class="movements-modal__item">
+          <dt>Descripción</dt>
+          <dd>{{ movement.description }}</dd>
+        </div>
+        <div class="movements-modal__item">
+          <dt>Categoría</dt>
+          <dd>{{ movement.category }}</dd>
+        </div>
+        <div class="movements-modal__item">
+          <dt>Fecha</dt>
+          <dd>{{ formatDateLabel(movement.date) }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+}
